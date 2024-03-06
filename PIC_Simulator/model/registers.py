@@ -1,0 +1,2 @@
+class register():
+    value = bytearray
