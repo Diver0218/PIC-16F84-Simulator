@@ -12,8 +12,8 @@ class Listing():
 
     def create_instructions(self):
         self.readFile()
-        print(self.instructions)
-        print(self.names)
+        # print(self.instructions)
+        # print(self.names)
         self.replace_names()
         print(self.instructions)
 
@@ -68,11 +68,17 @@ class Listing():
                     'inst': inst,
                     'arg1': arg1,
                 }
+        elif len(parts) == 1:
+            return {
+                'inst': parts[0]
+            }
+        else:
+            raise Exception("Unknown Instruction in Listing")
             
     def safe_name(self, line):
         parts = line.split(" ")
         name = parts[0]
-        adress = parts[2]
+        adress = parts[-1]
         return {
             'name': name,
             'adr': adress,
@@ -80,10 +86,11 @@ class Listing():
     
 
     def replace_names(self):
-        for inst in self.instructions:
-            for name in self.names:
-                if inst.arg1 == name.name:
-                    inst.arg1 = name.adr
+        for one_inst in self.instructions:
+            if 'arg1' in one_inst.keys():
+                for name in self.names:
+                    if one_inst['arg1'] == name['name']:
+                        one_inst['arg1'] = name['adr']
 
 
     # def format_adr(self):
