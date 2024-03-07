@@ -2,8 +2,8 @@ class Register():
 
     value : int
 
-    def __init__(self):
-        self.set(0x00)
+    def __init__(self, value=0x00):
+        self.set(value)
 
     def set(self, value : int):
         if value > 0xFF:

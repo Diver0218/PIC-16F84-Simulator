@@ -22,12 +22,13 @@ class Memory():
     EECON1 : Register
     EECON2 : Register
 
-    W : Register = 0x00
+    W = Register(0x00)
 
-    eeprom : Register = [0] * 68
+    eeprom = [Register(0)] * 68
 
     stackpointer : int
 
-    stack : int = [0] * 68
+    stack = [int(0x00)] * 8
+
 
 
