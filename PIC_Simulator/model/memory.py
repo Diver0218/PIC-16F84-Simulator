@@ -22,8 +22,6 @@ class Memory():
     EECON1 : Register
     EECON2 : Register
 
-    W = Register(0x00)
-
     eeprom = [Register(0)] * 68
 
     stackpointer : int
