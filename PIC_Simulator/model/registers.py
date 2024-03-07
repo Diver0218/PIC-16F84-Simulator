@@ -23,3 +23,16 @@ class Register():
         if self.value < 0x00:
             self.value = 0xFF
             # set overload flagg
+
+    def __add__(self, other):
+        self.value += other
+        if self.value > 0xFF:
+            self.value = 0x00
+            # set overload flagg
+        # zeroflag
+
+    def __and__(self, other):
+        self.value = self.value & other
+        # set zeroflag
+
+    
