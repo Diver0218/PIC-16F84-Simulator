@@ -1,4 +1,4 @@
-
+import re
 
 class Listing():
 
@@ -15,6 +15,8 @@ class Listing():
         # print(self.instructions)
         # print(self.names)
         self.replace_names()
+        # print(self.instructions)
+        self.format_nmbr()
         print(self.instructions)
 
     def readFile(self):
@@ -93,8 +95,12 @@ class Listing():
                         one_inst['arg1'] = name['adr']
 
 
-    # def format_adr(self):
-    #     for inst in self.instructions:
-    #         #asd
-
-        
+    def format_nmbr(self):
+        for inst in self.instructions:
+            if 'arg1' in inst.keys():
+                if re.match(".*[Bb]$", str(inst['arg1'])):
+                    inst['arg1'] = int(inst['arg1'][:len(inst['arg1'] ) - 1], 2)
+                    print("bin: "+ str(inst['arg1']))
+                if re.match(".*[Hh]$", str(inst['arg1'])):
+                    inst['arg1'] = int(inst['arg1'][:len(inst['arg1'] ) - 1], 16)
+                    print("hex: " + str(inst['arg1']))
