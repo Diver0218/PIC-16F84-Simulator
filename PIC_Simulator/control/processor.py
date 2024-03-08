@@ -5,7 +5,7 @@ from parser import Listing
 class Processor():
 
     mem = Memory
-    W = Register(0x00)
+    W = Register
     quartz = int
     lst = Listing
 
@@ -13,21 +13,23 @@ class Processor():
         self.lst = lst
         lst.create_instructions()
         print(lst.instructions)
+        self.W.value = 0
 
     def addlw(self, k):
-        self.W += k
+        self.W = self.W + k
+
 
     def andlw(self, k):
         self.W = self.W & k
 
     def addwf(self, f, d = 0):
         if d == 0:
-            self.W += f.value
+            self.W = self.W + self.mem.eeprom[f]
         else:
-            f += self.W.value
+            self.mem.eeprom[f] = self.mem.eeprom[f] +self.W
 
     def andwf(self, f, d = 0):
         if d == 0:
-            self.W &= f.value
+            self.W = self.W & self.mem.eeprom[f].value
         else:
-            f &= self.W.value
+            self.mem.eeprom[f] = self.mem.eeprom[f] & self.W

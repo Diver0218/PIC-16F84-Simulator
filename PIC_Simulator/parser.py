@@ -17,7 +17,7 @@ class Listing():
         self.replace_names()
         # print(self.instructions)
         self.format_nmbr()
-        print(self.instructions)
+        # print(self.instructions)
 
     def readFile(self):
         with open(self.filePath, "r") as file:
@@ -100,7 +100,7 @@ class Listing():
             if 'arg1' in inst.keys():
                 if re.match(".*[Bb]$", str(inst['arg1'])):
                     inst['arg1'] = int(inst['arg1'][:len(inst['arg1'] ) - 1], 2)
-                    print("bin: "+ str(inst['arg1']))
+                    # print("bin: "+ str(inst['arg1']))
                 if re.match(".*[Hh]$", str(inst['arg1'])):
                     inst['arg1'] = int(inst['arg1'][:len(inst['arg1'] ) - 1], 16)
-                    print("hex: " + str(inst['arg1']))
+                    # print("hex: " + str(inst['arg1']))
