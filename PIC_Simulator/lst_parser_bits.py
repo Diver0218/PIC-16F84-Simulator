@@ -9,7 +9,7 @@ class Listing():
 
     def create_instructions(self):
         self.readFile()
-        print(self)
+        # print(self)
 
     def readFile(self):
         pc_index = 0
@@ -261,3 +261,5 @@ class Listing():
                 'inst': 'sublw',
                 'literal': opcode & 0b0000_0000_1111_1111,
             }
+    def get_instructions(self):
+        return self.instructions

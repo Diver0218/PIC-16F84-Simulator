@@ -26,7 +26,7 @@ class Memory():
 
     stackpointer : int = 0
 
-    stack = [int(0x00)] * 8
+    stack = []
 
     pc : int = 0
 
@@ -46,4 +46,17 @@ class Memory():
     
     def inc_pc(self, amount = 1):
         self.pc += amount
+
+    def set_pc(self, pc):
+        self.pc = pc
+
+    def push_pc(self):
+        self.stack.append(self.pc)
+        if len(self.stack) > 8:
+            self.stack.pop(0)
+
+    def pop_pc(self):
+        if len(self.stack) == 0:
+            return None
+        return self.stack.pop()
     

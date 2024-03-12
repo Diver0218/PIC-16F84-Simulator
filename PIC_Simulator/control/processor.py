@@ -7,11 +7,9 @@ class Processor():
     W = W_Register(0)
     quartz = int()
     inst = list()
-    JPS = list()
 
-    def __init__(self, inst, JPs) -> None:
+    def __init__(self, inst) -> None:
         self.inst = inst
-        self.JPs = JPs
         self.mem.inc_pc()
 
     def addlw(self, k):
@@ -69,7 +67,8 @@ class Processor():
         self.mem.inc_pc()
 
     def call(self, k):
-        #call Routine
+        self.mem.push_pc()
+        self.mem.set_pc(k)
         return
     
     def clrf(self, f):
@@ -108,7 +107,7 @@ class Processor():
         self.mem.inc_pc()
 
     def goto(self, k):
-        #goto Routine
+        self.mem.set_pc(k)
         return
     
     def incf(self, f, d = 0):
@@ -160,11 +159,12 @@ class Processor():
         return
     
     def retlw(self, k):
-        # Return literal to W
+        self.W.set(k)
+        self.mem.set_pc(self.mem.pop_pc())
         return
     
     def _return(self):
-        # Return
+        self.mem.set_pc(self.mem.pop_pc())
         return
     
     def rlf(self, f, d = 0):
