@@ -9,6 +9,7 @@ class Listing():
 
     instructions = []
     names = []
+    JPs = []
 
     def create_instructions(self):
         self.readFile()
@@ -17,15 +18,20 @@ class Listing():
         self.replace_names()
         # print(self.instructions)
         self.format_nmbr()
-        # print(self.instructions)
+        print(self.instructions)
+        print(self.JPs)
 
     def readFile(self):
+        pc_index = 0
         with open(self.filePath, "r") as file:
             for line in file:
-                self.parseLine(line)
+                inst_len = len(self.instructions)
+                self.parseLine(line, pc_index)
+                if len(self.instructions) > inst_len:
+                    pc_index += 1
 
 
-    def parseLine(self, line : str):
+    def parseLine(self, line : str, pc_index : int):
 
         # Anfang abschneiden
         line = line[27:]
@@ -35,9 +41,9 @@ class Listing():
 
         # Zwischen instruction und Jumppoint unterscheiden
         if line[0] != " " and not line.isspace():
-            self.instructions.append({
-                'inst': "JP",
-                'jmp_name': line.strip()
+            self.JPs.append({
+                'jmp_name': line.strip(),
+                'pc_index': pc_index + 1,
             })
             return
         else:
@@ -104,3 +110,9 @@ class Listing():
                 if re.match(".*[Hh]$", str(inst['arg1'])):
                     inst['arg1'] = int(inst['arg1'][:len(inst['arg1'] ) - 1], 16)
                     # print("hex: " + str(inst['arg1']))
+
+    def get_instructions(self):
+        return self.instructions
+    
+    def get_JPs(self):
+        return self.JPs

@@ -24,6 +24,26 @@ class Memory():
 
     eeprom = [Register(0)] * 80
 
-    stackpointer : int
+    stackpointer : int = 0
 
     stack = [int(0x00)] * 8
+
+    pc : int = 0
+
+    def __str__(self):
+        retValue = ""
+        index = 0
+        for reg in self.eeprom:
+            retValue += f"Adresse: {index:02X}, " + str(reg) + '\n'
+            index += 1
+        return retValue
+    
+    def __setitem__(self, index, value):
+        self.eeprom[index] = value
+
+    def __getitem__(self, index):
+        return self.eeprom[index]
+    
+    def inc_pc(self, amount = 1):
+        self.pc += amount
+    
