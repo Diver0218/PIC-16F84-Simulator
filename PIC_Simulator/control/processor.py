@@ -1,6 +1,11 @@
 from model.memory import Memory
 from model.registers import W_Register
 
+STATUS = 0x03
+Z = 2
+C = 0
+DC = 1
+
 class Processor():
 
     mem = Memory()
@@ -14,6 +19,7 @@ class Processor():
 
     def addlw(self, k):
         self.W += k
+        self.carry_flag(self.W)
         self.mem.inc_pc()
 
     def andlw(self, k):
@@ -23,8 +29,10 @@ class Processor():
     def addwf(self, f, d = 0):
         if d == 0:
             self.W += self.mem.eeprom[f]
+            self.carry_flag(self.W) 
         else:
             self.mem.eeprom[f] += self.W
+            self.carry_flag(self.mem.eeprom[f])
         self.mem.inc_pc()
 
     def andwf(self, f, d = 0):
@@ -172,6 +180,7 @@ class Processor():
             self.W = W_Register(self.mem[f] << 1)
         else:
             self.mem[f] <<= 1
+        self.carry_flag_rotate(f, 7)
         self.mem.inc_pc()
 
     def rrf(self, f, d = 0):
@@ -179,6 +188,7 @@ class Processor():
             self.W = W_Register(self.mem[f] >> 1)
         else:
             self.mem[f] >>= 1
+        self.carry_flag_rotate(f, 0)
         self.mem.inc_pc()
 
     def sleep(self):
@@ -187,13 +197,16 @@ class Processor():
     
     def sublw(self, k):
         self.W -= k
+        self.carry_flag(self.W)
         self.mem.inc_pc()
 
     def subwf(self, f, d = 0):
         if d == 0:
             self.W = W_Register(-(self.W -self.mem[f]))
+            self.carry_flag(self.W)
         else:
             self.mem[f] -= self.W
+            self.carry_flag(self.mem.eeprom[f])
         self.mem.inc_pc()
 
     def swapf(self, f, d = 0):
@@ -210,3 +223,11 @@ class Processor():
         else:
             self.mem[f] ^= self.W
         self.mem.inc_pc()
+
+    def carry_flag(self, reg):
+        if reg > 0xFF:
+            reg = reg % 0xFF
+            self.mem[STATUS].set_bit(Z, 1)
+    
+    def carry_flag_rotate(self, reg, bit):
+        self.mem[STATUS].set_bit(Z, self.mem[reg].test_bit(bit))
