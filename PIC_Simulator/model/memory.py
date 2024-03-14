@@ -44,7 +44,7 @@ class Memory():
     def __getitem__(self, index):
         return self.eeprom[index]
     
-    def inc_pc(self, amount = 1):
+    def inc_pc(self, amount : int = 1):
         self.pc += amount
 
     def set_pc(self, pc):
