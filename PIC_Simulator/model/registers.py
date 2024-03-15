@@ -77,7 +77,7 @@ class Register():
             self |= mask
 
     def test_bit(self, index):
-        return self & (1 << index)
+        return (self & (1 << index)).value >> index
     
     def __lshift__(self, other):
         return Register(self.value << other)

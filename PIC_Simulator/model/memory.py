@@ -26,7 +26,7 @@ class Memory():
 
     stackpointer : int = 0
 
-    stack = []
+    stack : list[int] = [int(0)] * 8
 
     pc : int = 0
 
@@ -51,12 +51,18 @@ class Memory():
         self.pc = pc
 
     def push_pc(self):
-        self.stack.append(self.pc)
-        if len(self.stack) > 8:
-            self.stack.pop(0)
+        if self.stackpointer >= 7:
+            self.stackpointer = 0
+        else:
+            self.stackpointer += 1
+        self.stack[self.stackpointer] = self.pc
+
 
     def pop_pc(self):
-        if len(self.stack) == 0:
-            return None
-        return self.stack.pop()
+        retAdr = self.stack[self.stackpointer]
+        if self.stackpointer <= 0:
+            self.stackpointer = 7
+        else:
+            self.stackpointer -= 1
+        return retAdr
     
