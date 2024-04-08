@@ -7,8 +7,8 @@ class MemTable(QTableWidget):
 
     data : list
 
-    def __init__(self, data, *args):
-        QTableWidget.__init__(self, *args)
+    def __init__(self, data):
+        QTableWidget.__init__(self)
         self.data = data
         self.resizeColumnsToContents()
         self.resizeRowsToContents()
