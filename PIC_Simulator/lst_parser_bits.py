@@ -1,7 +1,11 @@
+import os
+
 class Listing():
 
     def __init__(self, filePath) -> None:
-        self.filePath = filePath
+        pic_sim_dir = os.path.dirname(os.path.abspath(__file__))
+        project_root = os.path.dirname(pic_sim_dir)
+        self.filePath = os.path.join(project_root, "ExamplesListings", "TPicSim1.LST")
 
     filePath : str
 
