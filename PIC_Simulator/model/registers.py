@@ -20,7 +20,7 @@ class Register():
                 self.value = value.value
         else:
             raise TypeError("Unsupported Type for 'set' method")
-        
+    
     def increment(self):
         return Register(self.value - 1)
 

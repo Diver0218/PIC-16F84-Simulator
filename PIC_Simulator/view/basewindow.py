@@ -1,6 +1,5 @@
 from PyQt6.QtWidgets import QApplication, QWidget, QLabel, QVBoxLayout, QHBoxLayout, QPushButton, QTableWidget, QTableWidgetItem
 from PyQt6.QtCore import Qt
-from ..__main__ import update_mem_gui
 #from model.memory import Register
 
 
@@ -43,7 +42,7 @@ class BaseWindow():
     window = QWidget()
     lay_h = QHBoxLayout()
     lay_v = QVBoxLayout()
-    lbl_code = QLabel("Test Text")
+    lbl_code = QLabel("Test TextldkgujkliguroiuaerhglreiugherpiughergiuerjhgeruigherwogiherögoierhgoerihgeraoighWEÄPGOEWUÜGPEOGJEÖIGewöogiwegöWELIHGÖweoi")
     btn_run = QPushButton('Run')
     tbl_memory = MemTable("test", 80, 10)
     tableData : list
