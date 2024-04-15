@@ -1,15 +1,13 @@
 from PyQt6.QtWidgets import QWidget, QLabel, QVBoxLayout, QHBoxLayout, QPushButton, QTableWidget, QTableWidgetItem, QMenuBar, QMenu, QMainWindow
 from PyQt6.QtWidgets import QLineEdit
 import sys
-
+from PyQt6.QtCore import QThread, pyqtSignal
 from control.processor import Processor
 from lst_parser_bits import Listing
 
 
 
 class MemTable(QTableWidget):
-
-    data : list
 
     def __init__(self, data, *args):
         QTableWidget.__init__(self, *args)
@@ -41,15 +39,16 @@ class MemTable(QTableWidget):
     
 class MainWindow(QWidget):
 
+    step_request = pyqtSignal(bool)
+
     def __init__(self):
         super().__init__()
 
     def create_window(self): 
-##########################
-#ACHTUNG nur zum testen
-        self.lst = Listing()
-        self.p = Processor(self.lst.get_instructions())
-##########################
+
+        self.init_processor()
+        self.init_signals()
+        
         self.lay_main = QHBoxLayout()
         self.lay_reg = QVBoxLayout()
         self.lay_code = QVBoxLayout()
@@ -57,7 +56,7 @@ class MainWindow(QWidget):
         self.lay_brk = QHBoxLayout()
         self.lay_freq = QHBoxLayout()
         self.lbl_code = QLabel("lskdugaldkgjsdlgkjbasdjgkbsdjgdfgdGSDGsdds\nwefwefewfwefwefwefWEFWefWEGWegewG\n hfgduzsgkeriugziebsztieruztvgerzuvteuzteriuvziguzrgiuzrgkazgrzaergkzeragkreuz")
-        self.btn_step = QPushButton('Step')
+        self.btn_step = QPushButton('Step', clicked=self.btn_step_method)
         self.btn_run = QPushButton('Run')
         self.btn_stop = QPushButton('Stop')
         self.btn_reset = QPushButton('Reset')
@@ -106,13 +105,24 @@ class MainWindow(QWidget):
         self.setLayout(self.lay_main)
         self.resize(800, 600)
 
+    def init_signals(self):
+        self.p.sig_mem.connect(self.setMemData)
+        self.step_request.connect(self.p.step)
+        
+    def init_processor(self):
+        self.lst = Listing()
+        self.p = Processor(self.lst.get_instructions())
+        self.p_thread = QThread()
+        self.p.moveToThread(self.p_thread)
+        self.p_thread.start()
+
     def init_window(self):
         self.create_window()
         self.show()
-        self.setMemData()
         self.tbl_mem.show()
 
-    def setMemData(self):
-        self.tbl_mem.setData(self.p.mem)
+    def setMemData(self, data):
+        self.tbl_mem.setData(data)
 
-    
+    def btn_step_method(self):
+        self.step_request.emit(True)

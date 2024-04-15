@@ -1,6 +1,6 @@
 from model.memory import Memory
 from model.registers import W_Register
-from PyQt6.QtCore import QObject
+from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot
 
 STATUS = 0x03
 Z = 2
@@ -13,12 +13,18 @@ class Processor(QObject):
     W = W_Register(0)
     quartz = int()
     inst = list()
+    
+    sig_mem = pyqtSignal(Memory)
+    sig_W = pyqtSignal(W_Register)
+    sig_quartz = pyqtSignal(int)
+    sig_inst = pyqtSignal(list)
 
     def __init__(self, inst) -> None:
         super().__init__()
         self.inst = inst
         self.mem.inc_pc()
-
+            
+#region Instructions
     def addlw(self, k):
         self.W += k
         self.carry_flag(self.W)
@@ -256,6 +262,7 @@ class Processor(QObject):
             self.mem[f] ^= self.W
             self.zero_flag(self.mem[f])
         self.mem.inc_pc()
+#endregion
 
     def carry_flag(self, reg):
         if reg.value > 0xFF:
@@ -268,3 +275,97 @@ class Processor(QObject):
     def zero_flag(self, reg):
         if reg.value == 0:
             reg.set_bit(Z, 1)
+            
+    def update_mem(self):
+        self.sig_mem.emit(self.mem)
+        
+    def update_W(self):
+        self.sig_W.emit(self.W)
+        
+    def update_quartz(self):
+        self.sig_quartz.emit(self.quartz)
+        
+    def update_inst(self, inst):
+        self.sig_inst.emit(self.inst)
+        
+    @pyqtSlot(bool)
+    def step(self):
+        self.execute_instruction()
+        self.update_mem()
+           
+    def execute_instruction(self):
+        inst = self.inst[self.mem.pc]
+        match inst:
+            case 'addlw':
+                self.addlw(inst.k)
+            case 'andlw':
+                self.andlw(inst.k)
+            case 'addwf':
+                self.addwf(inst.f, inst.d)
+            case 'andwf':
+                self.andwf(inst.f, inst.d)
+            case 'bcf':
+                self.bcf(inst.f, inst.b)
+            case 'btfsc':
+                self.btfsc(inst.f, inst.b)
+            case 'bsf':
+                self.bsf(inst.f, inst.b)
+            case 'btfss':
+                self.btfss(inst.f, inst.b)
+            case 'call':
+                self.call(inst.k)
+            case 'clrf':
+                self.clrf(inst.f)
+            case 'clrw':
+                self.clrw()
+            case 'clrwdt':
+                self.clrwdt()
+            case 'comf':
+                self.comf(inst.f, inst.d)
+            case 'decfsz':
+                self.decfsz(inst.f, inst.d)
+            case 'decf':
+                self.decf(inst.f, inst.d)
+            case 'goto':
+                self.goto(inst.k)
+            case 'incf':
+                self.incf(inst.f, inst.d)
+            case 'incfsz':
+                self.incfsz(inst.f, inst.d)
+            case 'iorlw':
+                self.iorlw(inst.k)
+            case 'iorwf':
+                self.iorwf(inst.f, inst.d)
+            case 'movlw':
+                self.movlw(inst.k)
+            case 'movf':
+                self.movf(inst.f, inst.d)
+            case 'movwf':
+                self.movwf(inst.f)
+            case 'nop':
+                self.nop()
+            case 'retfie':
+                self.retfie()
+            case 'retlw':
+                self.retlw(inst.k)
+            case 'return':
+                self._return()
+            case 'rlf':
+                self.rlf(inst.f, inst.d)
+            case 'rrf':
+                self.rrf(inst.f, inst.d)
+            case 'sleep':
+                self.sleep()
+            case 'sublw':
+                self.sublw(inst.k)
+            case 'subwf':
+                self.subwf(inst.f, inst.d)
+            case 'swapf':
+                self.swapf(inst.f, inst.d)
+            case 'xorlw':
+                self.xorlw(inst.k)
+            case 'xorwf':
+                self.xorwf(inst.f, inst.d)
+            case _:
+                pass
+            
