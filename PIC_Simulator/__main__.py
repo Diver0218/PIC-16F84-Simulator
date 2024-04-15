@@ -9,7 +9,6 @@ lst = Listing()
 
 Qapp = QApplication(sys.argv)
 window = MainWindow()
-window.__init__()
 window.init_window()
 p = Processor(lst.get_instructions())
 p_thread = QThread()
