@@ -1,12 +1,13 @@
 from model.memory import Memory
 from model.registers import W_Register
+from PyQt6.QtCore import QObject
 
 STATUS = 0x03
 Z = 2
 C = 0
 DC = 1
 
-class Processor():
+class Processor(QObject):
 
     mem = Memory()
     W = W_Register(0)
@@ -14,6 +15,7 @@ class Processor():
     inst = list()
 
     def __init__(self, inst) -> None:
+        super().__init__()
         self.inst = inst
         self.mem.inc_pc()
 

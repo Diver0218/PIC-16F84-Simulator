@@ -1,14 +1,17 @@
-from lst_parser_bits import Listing
+import sys
 from control.processor import Processor
-from view.basewindow import BaseWindow
+from PyQt6.QtWidgets import QApplication
+from PyQt6.QtCore import QThread
+from view.app_view import MainWindow
+from lst_parser_bits import Listing
 
-lst = Listing(filePath="./ExamplesListings/TPicSim1.LST")
-lst.create_instructions()
-inst = lst.get_instructions()
-p = Processor(inst)
-gui = BaseWindow(tableData = p.mem.eeprom)
-    
-p.movlw(10)
-p.movwf(1)
-gui.setMemData(p.mem.eeprom)
-gui.init_window()
+lst = Listing()
+
+Qapp = QApplication(sys.argv)
+window = MainWindow()
+window.__init__()
+window.init_window()
+p = Processor(lst.get_instructions())
+p_thread = QThread()
+p.moveToThread(p_thread)
+Qapp.exec()

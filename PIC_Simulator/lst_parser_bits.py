@@ -2,7 +2,7 @@ import os
 
 class Listing():
 
-    def __init__(self, filePath) -> None:
+    def __init__(self) -> None:
         pic_sim_dir = os.path.dirname(os.path.abspath(__file__))
         project_root = os.path.dirname(pic_sim_dir)
         self.filePath = os.path.join(project_root, "ExamplesListings", "TPicSim1.LST")
@@ -27,7 +27,7 @@ class Listing():
         else:
             self.instructions.append({
                 'pc' : int(line[0:4], 16),
-                'inst' : self.extract_instruction(line[5:9]),
+                'inst' : self.extract_instruction(int(line[5:9], 16)),
             })
 
     def __str__(self):
@@ -36,8 +36,7 @@ class Listing():
             retValue += str(line) + '\n'
         return retValue
     
-    def extract_instruction(self, line):
-        opcode = int(line, 16)
+    def extract_instruction(self, opcode):
 
         if (opcode & 0b1111_1111_0000_0000) == 0b0000_0111_0000_0000:
             return {

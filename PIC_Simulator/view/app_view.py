@@ -1,7 +1,10 @@
-from PyQt6.QtWidgets import QApplication, QWidget, QLabel, QVBoxLayout, QHBoxLayout, QPushButton, QTableWidget, QTableWidgetItem
-from PyQt6.QtCore import Qt
+from PyQt6.QtWidgets import QWidget, QLabel, QVBoxLayout, QHBoxLayout, QPushButton, QTableWidget, QTableWidgetItem, QMenuBar, QMenu, QMainWindow
 from PyQt6.QtWidgets import QLineEdit
-#from model.memory import Register
+import sys
+
+from control.processor import Processor
+from lst_parser_bits import Listing
+
 
 
 class MemTable(QTableWidget):
@@ -35,39 +38,45 @@ class MemTable(QTableWidget):
                     newitem = QTableWidgetItem(str(item))
                     self.setItem(i , j, newitem)
         self.setHorizontalHeaderLabels(horHeaders)
+    
+class MainWindow(QWidget):
 
+    def __init__(self):
+        super().__init__()
 
-class BaseWindow():
+    def create_window(self): 
+##########################
+#ACHTUNG nur zum testen
+        self.lst = Listing()
+        self.p = Processor(self.lst.get_instructions())
+##########################
+        self.lay_main = QHBoxLayout()
+        self.lay_reg = QVBoxLayout()
+        self.lay_code = QVBoxLayout()
+        self.lay_runctrl = QVBoxLayout()
+        self.lay_brk = QHBoxLayout()
+        self.lay_freq = QHBoxLayout()
+        self.lbl_code = QLabel("lskdugaldkgjsdlgkjbasdjgkbsdjgdfgdGSDGsdds\nwefwefewfwefwefwefWEFWefWEGWegewG\n hfgduzsgkeriugziebsztieruztvgerzuvteuzteriuvziguzrgiuzrgkazgrzaergkzeragkreuz")
+        self.btn_step = QPushButton('Step')
+        self.btn_run = QPushButton('Run')
+        self.btn_stop = QPushButton('Stop')
+        self.btn_reset = QPushButton('Reset')
+        self.txtbox_brk = QLineEdit("-")
+        self.txtbox_freq = QLineEdit("4.0")
+        self.btn_setbrk = QPushButton('Set')
+        self.btn_setfreq = QPushButton('Set')
+        self.lbl_timer = QLabel("0us")
+        self.tbl_porta = MemTable("test", 80, 10)
+        self.tbl_portb = MemTable("test", 80, 10)
+        self.tbl_mem = MemTable("test", 80, 10)
+        self.lbl_sfr = QLabel("SFR")
+        self.tableData : list
+        
+        self.menubar = QMenuBar(self)
+        file_menu = QMenu("Datei", self)
+        open_action = file_menu.addAction("Öffnen")
+        self.menubar.addMenu(file_menu)
 
-    app = QApplication([])
-    window = QWidget()
-    lay_main = QHBoxLayout()
-    lay_reg = QVBoxLayout()
-    lay_code = QVBoxLayout()
-    lay_runctrl = QVBoxLayout()
-    lay_brk = QHBoxLayout()
-    lay_freq = QHBoxLayout()
-    lbl_code = QLabel("Test Textldkgujkliguroiuaerhglreiugherpiughergiuerjhgeruigherwo\ngiherögoierhgoerihgeraoighWEÄPGOEWUÜGPEOGJEÖIGewöogiwegöWELIHGÖweoi")
-    btn_step = QPushButton('Step')
-    btn_run = QPushButton('Run')
-    btn_stop = QPushButton('Stop')
-    btn_reset = QPushButton('Reset')
-    txtbox_brk = QLineEdit("-")
-    txtbox_freq = QLineEdit("4.0")
-    btn_setbrk = QPushButton('Set')
-    btn_setfreq = QPushButton('Set')
-    lbl_timer = QLabel("0us")
-    tbl_porta = MemTable("test", 80, 10)
-    tbl_portb = MemTable("test", 80, 10)
-    tbl_mem = MemTable("test", 80, 10)
-    lbl_sfr = QLabel("SFR")
-    tableData : list
-
-    def __init__(self, tableData):
-        self.create_window()
-        self.tableData = tableData
-
-    def create_window(self):
         self.lay_reg.addWidget(self.tbl_porta)
         self.lay_reg.addWidget(self.tbl_portb)
         self.lay_reg.addWidget(self.tbl_mem)
@@ -94,17 +103,16 @@ class BaseWindow():
         self.lay_main.addLayout(self.lay_code)
         self.lay_main.addLayout(self.lay_runctrl)
 
-        self.window.setLayout(self.lay_main)
-        self.window.resize(800, 600)
+        self.setLayout(self.lay_main)
+        self.resize(800, 600)
 
     def init_window(self):
-        self.window.show()
-        self.setMemData(self.tableData)
+        self.create_window()
+        self.show()
+        self.setMemData()
         self.tbl_mem.show()
-        self.app.exec()
 
-    def setMemData(self, data):
-        self.tbl_mem.setData(data)
+    def setMemData(self):
+        self.tbl_mem.setData(self.p.mem)
 
-    def on_click_run(self):
-        self.setMemData(self.tableData)
+    
