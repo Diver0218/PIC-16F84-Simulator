@@ -23,6 +23,11 @@ class Processor(QObject):
         super().__init__()
         self.inst = inst
         self.mem.inc_pc()
+        
+    def set_instructions(self, inst):
+        self.inst = inst
+        self.mem.inc_pc()
+        self.update_inst(inst)
             
 #region Instructions
     def addlw(self, k):

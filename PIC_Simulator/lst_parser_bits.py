@@ -3,21 +3,19 @@ import os
 class Listing():
 
     def __init__(self) -> None:
-        pic_sim_dir = os.path.dirname(os.path.abspath(__file__))
-        project_root = os.path.dirname(pic_sim_dir)
-        self.filePath = os.path.join(project_root, "ExamplesListings", "TPicSim1.LST")
+        self.filePath = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "ExamplesListings", "TPicSim1.LST")
 
     filePath : str
 
     instructions = []
 
-    def create_instructions(self):
-        self.readFile()
+    def create_instructions(self, file):
+        self.readFile(file)
         # print(self)
 
-    def readFile(self):
+    def readFile(self, file = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "ExamplesListings", "TPicSim1.LST")):
         pc_index = 0
-        with open(self.filePath, 'r') as file:
+        with open(file, 'r') as file:
             for line in file:
                 self.parseLine(line)
 
@@ -261,5 +259,6 @@ class Listing():
                 'inst': 'sublw',
                 'literal': opcode & 0b0000_0000_1111_1111,
             }
+            
     def get_instructions(self):
         return self.instructions
