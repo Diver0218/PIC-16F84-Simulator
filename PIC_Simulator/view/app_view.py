@@ -52,6 +52,7 @@ class MainWindow(QMainWindow):
 
     def __init__(self):
         super().__init__()
+        self.setWindowTitle('PIC-16F84-Simulator')
 
     def create_window(self): 
 ##########################
@@ -86,6 +87,8 @@ class MainWindow(QMainWindow):
         file_menu = QMenu("Datei", self)
         open_action = file_menu.addAction("Öffnen")
         menubar.addMenu(file_menu)
+
+        widg_main.setWindowTitle('PIC-16F84-Simulator')
         
         self.tbl_porta.setHorizontalHeaderLabels(['RA 7','RA 6','RA 5','RA 4','RA 3','RA 2','RA 1','RA 0'])
         self.tbl_porta.setVerticalHeaderLabels(['TRIS','i/o','RA'])
