@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QWidget, QLabel, QVBoxLayout, QHBoxLayout, QPushButton, QTableWidget, QTableWidgetItem, QMenuBar, QMenu, QMainWindow, QSizePolicy
+from PyQt6.QtWidgets import QWidget, QLabel, QVBoxLayout, QHBoxLayout, QPushButton, QTableWidget, QTableWidgetItem, QMenuBar, QMenu, QMainWindow, QLayout
 from PyQt6.QtWidgets import QLineEdit
 import sys
 
@@ -92,13 +92,23 @@ class MainWindow(QMainWindow):
         
         self.tbl_porta.setHorizontalHeaderLabels(['RA 7','RA 6','RA 5','RA 4','RA 3','RA 2','RA 1','RA 0'])
         self.tbl_porta.setVerticalHeaderLabels(['TRIS','i/o','RA'])
+        self.tbl_porta.resizeColumnsToContents()
+        self.tbl_porta.resizeRowsToContents()
         self.tbl_portb.setHorizontalHeaderLabels(['RB 7','RB 6','RB 5','RB 4','RB 3','RB 2','RB 1','RB 0'])
         self.tbl_portb.setVerticalHeaderLabels(['TRIS','i/o','RB'])
-        self.tbl_mem.setHorizontalHeaderLabels(['Adress', 'Bit 0', 'Bit 1', 'Bit 2', 'Bit 3', 'Bit 4', 'Bit 5', 'Bit 6', 'Bit 6', 'Full Value'])
+        self.tbl_portb.resizeColumnsToContents()
+        self.tbl_portb.resizeRowsToContents()
+        self.tbl_mem.setHorizontalHeaderLabels(['Bit 0', 'Bit 1', 'Bit 2', 'Bit 3', 'Bit 4', 'Bit 5', 'Bit 6', 'Bit 6', 'Value'])
+        self.tbl_mem.resizeColumnsToContents()
+        self.tbl_mem.resizeRowsToContents()
         
         lay_reg.addWidget(self.tbl_porta)
         lay_reg.addWidget(self.tbl_portb)
         lay_reg.addWidget(self.tbl_mem)
+        lay_reg.setStretch(0, 28)
+        lay_reg.setStretch(1, 28)
+        lay_reg.setStretch(2, 64)
+        lay_reg.setSizeConstraint(QLayout.SizeConstraint.SetFixedSize)
         
         lay_code.addWidget(lbl_code)
         
