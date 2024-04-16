@@ -1,5 +1,6 @@
 from PyQt6.QtWidgets import QWidget, QLabel, QVBoxLayout, QHBoxLayout, QPushButton, QTableWidget, QTableWidgetItem, QMenuBar, QMenu, QMainWindow, QLayout
 from PyQt6.QtWidgets import QLineEdit
+from PyQt6.QtCore import QRect
 import sys
 
 from control.processor import Processor
@@ -60,35 +61,19 @@ class MainWindow(QMainWindow):
         self.lst = Listing()
         self.p = Processor(self.lst.get_instructions())
 ##########################
+
+        #main
         widg_main = QWidget()
         lay_main = QHBoxLayout()
-        lay_reg = QVBoxLayout()
-        lay_code = QVBoxLayout()
-        lay_runctrl = QVBoxLayout()
-        lay_brk = QHBoxLayout()
-        lay_freq = QHBoxLayout()
-        lbl_code = QLabel("lskdugaldkgjsdlgkjbasdjgkbsdjgdfgdGSDGsdds\nwefwefewfwefwefwefWEFWefWEGWegewG\n hfgduzsgkeriugziebsztieruztvgerzuvteuzteriuvziguzrgiuzrgkazgrzaergkzeragkreuz")
-        btn_step = QPushButton('Step')
-        btn_run = QPushButton('Run')
-        btn_stop = QPushButton('Stop')
-        btn_reset = QPushButton('Reset')
-        txtbox_brk = QLineEdit("-")
-        txtbox_freq = QLineEdit("4.0")
-        btn_setbrk = QPushButton('Set')
-        btn_setfreq = QPushButton('Set')
-        lbl_timer = QLabel("0us")
+        
+        #regs
+        widg_reg = QWidget(parent=widg_main)
+        widg_reg.setGeometry(QRect(0, 0, 1631, 851))
+        lay_reg = QVBoxLayout(widg_reg)
         self.tbl_porta = MemTable(3, 8)
         self.tbl_portb = MemTable(3, 8)
         self.tbl_mem = MemTable(80, 9)
         lbl_sfr = QLabel("SFR")
-        tableData : list
-        
-        menubar = QMenuBar(self)
-        file_menu = QMenu("Datei", self)
-        open_action = file_menu.addAction("Öffnen")
-        menubar.addMenu(file_menu)
-
-        widg_main.setWindowTitle('PIC-16F84-Simulator')
         
         self.tbl_porta.setHorizontalHeaderLabels(['RA 7','RA 6','RA 5','RA 4','RA 3','RA 2','RA 1','RA 0'])
         self.tbl_porta.setVerticalHeaderLabels(['TRIS','i/o','RA'])
@@ -110,7 +95,34 @@ class MainWindow(QMainWindow):
         lay_reg.setStretch(2, 64)
         lay_reg.setSizeConstraint(QLayout.SizeConstraint.SetFixedSize)
         
+        
+        #Code
+        widg_code = QWidget(parent=widg_main)
+        lay_code = QVBoxLayout(widg_code)
+        lbl_code = QLabel("lskdugaldkgjsdlgkjbasdjgkbsdjgdfgdGSDGsdds\nwefwefewfwefwefwefWEFWefWEGWegewG\n hfgduzsgkeriugziebsztieruztvgerzuvteuzteriuvziguzrgiuzrgkazgrzaergkzeragkreuz")
+        
         lay_code.addWidget(lbl_code)
+        
+        #Run Control
+        widg_runctrl = QWidget(parent=widg_main)
+        lay_runctrl = QVBoxLayout(widg_runctrl)
+        
+        widg_brk = QWidget(parent=widg_runctrl)
+        lay_brk = QHBoxLayout(widg_brk)
+        
+        widg_freq = QWidget(parent=widg_runctrl)
+        lay_freq = QHBoxLayout(widg_freq)
+        
+        btn_step = QPushButton('Step')
+        btn_run = QPushButton('Run')
+        btn_stop = QPushButton('Stop')
+        btn_reset = QPushButton('Reset')
+        txtbox_brk = QLineEdit("-")
+        txtbox_freq = QLineEdit("4.0")
+        btn_setbrk = QPushButton('Set')
+        btn_setfreq = QPushButton('Set')
+        lbl_timer = QLabel("0us")
+        tableData : list
         
         lay_runctrl.addWidget(btn_step)
         lay_runctrl.addWidget(btn_run)
@@ -123,22 +135,32 @@ class MainWindow(QMainWindow):
         lay_freq.addWidget(txtbox_freq)
         lay_freq.addWidget(btn_setfreq)
         
-        lay_runctrl.addLayout(lay_brk)
-        lay_runctrl.addLayout(lay_freq)
+        lay_runctrl.addWidget(widg_brk)
+        lay_runctrl.addWidget(widg_freq)
         
         lay_runctrl.addWidget(lbl_timer)
         
-        lay_main.addLayout(lay_reg)
-        lay_main.addLayout(lay_code)
-        lay_main.addLayout(lay_runctrl)
-
-        widg_main.setLayout(lay_main)
-        widg_main.setGeometry(0, menubar.height(), 0, 0)
         
+        #menubar
+        menubar = QMenuBar(self)
+        file_menu = QMenu("Datei", self)
+        open_action = file_menu.addAction("Öffnen")
+        menubar.addMenu(file_menu)
+
         self.setMenuBar(menubar)
         self.setCentralWidget(widg_main)
         menubar.raise_()
         self.resize(800, 600)
+        
+        
+        
+        lay_main.addWidget(widg_reg)
+        lay_main.addWidget(widg_code)
+        lay_main.addWidget(widg_runctrl)
+        lay_main.setSizeConstraint(QLayout.SizeConstraint.SetNoConstraint)
+
+        widg_main.setLayout(lay_main)
+        widg_main.setWindowTitle('PIC-16F84-Simulator')
         
 
     def init_window(self):
