@@ -25,10 +25,7 @@ class Listing():
         if line[0] == ' ':
             return
         else:
-            self.instructions.append({
-                'pc' : int(line[0:4], 16),
-                'inst' : self.extract_instruction(int(line[5:9], 16)),
-            })
+            self.instructions.append(self.extract_instruction(int(line[5:9], 16)))
 
     def __str__(self):
         retValue = ''

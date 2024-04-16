@@ -1,7 +1,7 @@
 from PyQt6.QtWidgets import QWidget, QLabel, QVBoxLayout, QHBoxLayout, QPushButton, QTableWidget, QTableWidgetItem, QMenuBar, QMenu, QMainWindow, QSizePolicy
 from PyQt6.QtWidgets import QLineEdit
 import sys
-
+from PyQt6.QtCore import QThread, pyqtSignal
 from control.processor import Processor
 from lst_parser_bits import Listing
 
@@ -131,7 +131,6 @@ class MainWindow(QMainWindow):
     def init_window(self):
         self.create_window()
         self.show()
-        self.setMemData()
         self.tbl_mem.show()
 
     def setMemData(self):
