@@ -1,9 +1,10 @@
-from PyQt6.QtWidgets import QWidget, QLabel, QVBoxLayout, QHBoxLayout, QPushButton, QTableWidget, QTableWidgetItem, QMenuBar, QMenu, QMainWindow
+from PyQt6.QtWidgets import QWidget, QLabel, QVBoxLayout, QHBoxLayout, QPushButton, QTableWidget, QTableWidgetItem, QMenuBar, QMenu, QMainWindow, QFileDialog
 from PyQt6.QtWidgets import QLineEdit
 import sys
 from PyQt6.QtCore import QThread, pyqtSignal
 from control.processor import Processor
 from lst_parser_bits import Listing
+from pathlib import Path
 
 
 
@@ -73,7 +74,8 @@ class MainWindow(QWidget):
         
         self.menubar = QMenuBar(self)
         file_menu = QMenu("Datei", self)
-        open_action = file_menu.addAction("Öffnen")
+        self.open_action = file_menu.addAction("Öffnen")
+        self.open_action.triggered.connect(self.open_file)
         self.menubar.addMenu(file_menu)
 
         self.lay_reg.addWidget(self.tbl_porta)
@@ -126,3 +128,14 @@ class MainWindow(QWidget):
 
     def btn_step_method(self):
         self.step_request.emit(True)
+        
+    def open_file(self):
+        filename = QFileDialog.getOpenFileName(self, "Open File", "", "Listing (*.LST);; All Files (*)")
+        self.lst.create_instructions(filename[0])
+        with open(filename[0], 'r') as file:
+            self.p_thread.terminate()
+            self.p = Processor(self.lst.get_instructions())
+            self.p_thread = QThread()
+            self.p.moveToThread(self.p_thread)
+            self.p_thread.start()
+            self.lbl_code.setText(file.read())
