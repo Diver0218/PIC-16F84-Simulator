@@ -93,9 +93,6 @@ class MainWindow(QMainWindow):
         lay_reg.addWidget(self.tbl_porta)
         lay_reg.addWidget(self.tbl_portb)
         lay_reg.addWidget(self.tbl_mem)
-        lay_reg.setStretch(0, 28)
-        lay_reg.setStretch(1, 28)
-        lay_reg.setStretch(2, 64)
         
         
         #Code
