@@ -68,7 +68,7 @@ class MainWindow(QMainWindow):
         
         #regs
         widg_reg = QWidget(parent=widg_main)
-        widg_reg.setGeometry(QRect(0, 0, 1631, 851))
+        widg_reg.setGeometry(QRect(0, 0, 1631, 2000))
         lay_reg = QVBoxLayout(widg_reg)
         self.tbl_porta = MemTable(3, 8)
         self.tbl_portb = MemTable(3, 8)
@@ -79,13 +79,16 @@ class MainWindow(QMainWindow):
         self.tbl_porta.setVerticalHeaderLabels(['TRIS','i/o','RA'])
         self.tbl_porta.resizeColumnsToContents()
         self.tbl_porta.resizeRowsToContents()
+        self.tbl_porta.setFixedSize(348, 98)
         self.tbl_portb.setHorizontalHeaderLabels(['RB 7','RB 6','RB 5','RB 4','RB 3','RB 2','RB 1','RB 0'])
         self.tbl_portb.setVerticalHeaderLabels(['TRIS','i/o','RB'])
         self.tbl_portb.resizeColumnsToContents()
         self.tbl_portb.resizeRowsToContents()
+        self.tbl_portb.setFixedSize(348, 98)
         self.tbl_mem.setHorizontalHeaderLabels(['Bit 0', 'Bit 1', 'Bit 2', 'Bit 3', 'Bit 4', 'Bit 5', 'Bit 6', 'Bit 6', 'Value'])
         self.tbl_mem.resizeColumnsToContents()
         self.tbl_mem.resizeRowsToContents()
+        self.tbl_mem.setFixedWidth(392)
         
         lay_reg.addWidget(self.tbl_porta)
         lay_reg.addWidget(self.tbl_portb)
@@ -93,7 +96,6 @@ class MainWindow(QMainWindow):
         lay_reg.setStretch(0, 28)
         lay_reg.setStretch(1, 28)
         lay_reg.setStretch(2, 64)
-        lay_reg.setSizeConstraint(QLayout.SizeConstraint.SetFixedSize)
         
         
         #Code
@@ -150,10 +152,10 @@ class MainWindow(QMainWindow):
         self.setMenuBar(menubar)
         self.setCentralWidget(widg_main)
         menubar.raise_()
-        self.resize(800, 600)
+        self.resize(1200, 600)
         
         
-        
+        #Complete
         lay_main.addWidget(widg_reg)
         lay_main.addWidget(widg_code)
         lay_main.addWidget(widg_runctrl)
