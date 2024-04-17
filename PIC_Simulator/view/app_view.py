@@ -1,7 +1,7 @@
 from PyQt6.QtWidgets import QWidget, QLabel, QVBoxLayout, QHBoxLayout, QPushButton, QTableWidget, QTableWidgetItem, QMenuBar, QMenu, QMainWindow, QFileDialog
 from PyQt6.QtWidgets import QLineEdit
 import sys
-from PyQt6.QtCore import QThread, pyqtSignal
+from PyQt6.QtCore import QThread, pyqtSignal, pyqtSlot
 from control.processor import Processor
 from lst_parser_bits import Listing
 from pathlib import Path
@@ -126,9 +126,11 @@ class MainWindow(QWidget):
     def setMemData(self, data):
         self.tbl_mem.setData(data)
 
+    @pyqtSlot()
     def btn_step_method(self):
         self.step_request.emit(True)
-        
+    
+    @pyqtSlot()    
     def open_file(self):
         filename = QFileDialog.getOpenFileName(self, "Open File", "", "Listing (*.LST);; All Files (*)")
         self.lst.create_instructions(filename[0])
