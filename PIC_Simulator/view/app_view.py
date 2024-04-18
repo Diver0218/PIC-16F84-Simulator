@@ -70,7 +70,7 @@ class MainWindow(QMainWindow):
         #regs
         self.widg_reg = QWidget(parent=self.widg_main)
         self.widg_reg.setGeometry(QRect(0, 0, 1631, 2000))
-        lay_reg = QVBoxLayout(self.widg_reg)
+        self.lay_reg = QVBoxLayout(self.widg_reg)
         self.tbl_porta = MemTable(3, 8)
         self.tbl_portb = MemTable(3, 8)
         self.tbl_mem = MemTable(80, 9)
@@ -111,7 +111,7 @@ class MainWindow(QMainWindow):
         self.lay_brk = QHBoxLayout(self.widg_brk)
         
         self.widg_freq = QWidget(parent=self.widg_runctrl)
-        self.lay_freq = QHBoxLayout(widg_freq)
+        self.lay_freq = QHBoxLayout(self.widg_freq)
         
         self.btn_step = QPushButton('Step')
         self.btn_run = QPushButton('Run')
@@ -167,13 +167,13 @@ class MainWindow(QMainWindow):
         
         
         #Complete
-        lay_main.addWidget(widg_reg)
-        lay_main.addWidget(widg_code)
-        lay_main.addWidget(widg_runctrl)
-        lay_main.setSizeConstraint(QLayout.SizeConstraint.SetNoConstraint)
+        self.lay_main.addWidget(self.widg_reg)
+        self.lay_main.addWidget(self.widg_code)
+        self.lay_main.addWidget(self.widg_runctrl)
+        self.lay_main.setSizeConstraint(QLayout.SizeConstraint.SetNoConstraint)
 
-        widg_main.setLayout(lay_main)
-        widg_main.setWindowTitle('PIC-16F84-Simulator')
+        self.widg_main.setLayout(self.lay_main)
+        self.widg_main.setWindowTitle('PIC-16F84-Simulator')
         
 
     def init_window(self):
@@ -186,13 +186,18 @@ class MainWindow(QMainWindow):
 
     @pyqtSlot()
     def btn_step_method(self):
+        self.step_request.emit(True)
     
-    @pyqtSlot()    
+    @pyqtSlot()
     def open_file(self):
         filename = QFileDialog.getOpenFileName(self, "Open File", "", "Listing (*.LST);; All Files (*)")
         self.lst.create_instructions(filename[0])
         with open(filename[0], 'r') as file:
-            self.p_thread.terminate()
+            try:
+                self.p_thread.terminate()
+            except Exception:
+                pass
+                
             self.p = Processor(self.lst.get_instructions())
             self.p_thread = QThread()
             self.p.moveToThread(self.p_thread)
