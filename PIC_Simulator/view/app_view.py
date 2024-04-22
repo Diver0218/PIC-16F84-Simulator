@@ -37,23 +37,33 @@ class MemTable(QTableWidget):
         rows = self.rowCount()
         columns = self.columnCount()
         for i in range(columns):
-            self.setItem(2, i, QTableWidgetItem(str(mem[adr].test_bit(7 - i))))
+            tbl_button = TblPortButton()
+            tbl_button.setText(str(mem[adr].test_bit(7 - i)))
+            self.setCellWidget(2, i, tbl_button)
         for i in range(columns):
             item = mem[adr].test_bit(7 - i) #adr muss noch um +0x80 verschoben werden
-            self.setItem(0, i, QTableWidgetItem(str(item)))
+            self.setItem(0, i, QTableWidgetItem(str(item))) # evtl hier auch ToggleButton einfügen
             if item:
                 self.setItem(1, i, QTableWidgetItem('i'))
             else:
                 self.setItem(1, i, QTableWidgetItem('o'))
         
             
-    
+class TblPortButton(QPushButton):
+    def __init__(self, parent=None):
+        super(TblPortButton, self).__init__(parent)
+        self.clicked.connect(self.toggleButton)
+        
+    def toggleButton(self): #Muss noch mit Memory verbunden werden
+        if self.text() == '1':
+            self.setText('0')
+        else:
+            self.setText('1')
     
 class MainWindow(QMainWindow):
 
     def __init__(self):
         super().__init__()
-        self.setWindowTitle('PIC-16F84-Simulator')
 
     def create_window(self): 
 ##########################
@@ -121,7 +131,6 @@ class MainWindow(QMainWindow):
         btn_setbrk = QPushButton('Set')
         btn_setfreq = QPushButton('Set')
         lbl_timer = QLabel("0us")
-        tableData : list
         
         lay_runctrl.addWidget(btn_step)
         lay_runctrl.addWidget(btn_run)
