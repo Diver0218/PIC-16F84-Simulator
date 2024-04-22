@@ -124,18 +124,6 @@ class MainWindow(QMainWindow):
         self.lbl_timer = QLabel("0us")
         self.tableData : list
         
-        self.menubar = QMenuBar(self)
-        file_menu = QMenu("Datei", self)
-        self.open_action = file_menu.addAction("Öffnen")
-        self.open_action.triggered.connect(self.open_file)
-        self.menubar.addMenu(file_menu)
-
-        self.lay_reg.addWidget(self.tbl_porta)
-        self.lay_reg.addWidget(self.tbl_portb)
-        self.lay_reg.addWidget(self.tbl_mem)
-        
-        self.lay_code.addWidget(self.lbl_code)
-        
         self.lay_runctrl.addWidget(self.btn_step)
         self.lay_runctrl.addWidget(self.btn_run)
         self.lay_runctrl.addWidget(self.btn_stop)
@@ -183,6 +171,8 @@ class MainWindow(QMainWindow):
 
     def setMemData(self, data):
         self.tbl_mem.setData(data)
+        self.tbl_porta.setPortData(data, 5)
+        self.tbl_portb.setPortData(data, 6)
 
     @pyqtSlot()
     def btn_step_method(self):
