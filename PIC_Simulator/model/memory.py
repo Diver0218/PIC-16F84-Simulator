@@ -29,6 +29,8 @@ class Memory():
     stack : list[int] = [int(0)] * 8
 
     pc : int = 0
+    
+    bank_relevant_adr = [0x01, 0x05, 0x06, 0x08, 0x09]
 
     def __str__(self):
         retValue = ""
@@ -39,12 +41,20 @@ class Memory():
         return retValue
     
     def __setitem__(self, index, value):
-        
-        self.eeprom[index] = value
+        bank = self.eeprom[0,3].test_bit(5)
+        if bank == 1 and index in self.bank_relevant_adr:
+            self.eeprom[1, index] = value
+        else:
+            self.eeprom[0, index] = value
 
     def __getitem__(self, index):
-        return self.eeprom[index]
-    
+        bank = self.eeprom[0,3].test_bit(5)
+        if bank == 1 and index in self.bank_relevant_adr:
+            return self.eeprom[1, index]    
+        else:
+            return self.eeprom[0, index]    
+            
+                    
     def inc_pc(self, amount : int = 1):
         self.pc += amount
 
