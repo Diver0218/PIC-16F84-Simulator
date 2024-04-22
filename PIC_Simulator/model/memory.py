@@ -22,7 +22,7 @@ class Memory():
     # EECON1 : Register
     # EECON2 : Register
 
-    eeprom = [Register(0)] * 80
+    eeprom = [[Register(0)] *2 ] * 80
 
     stackpointer : int = 0
 
@@ -34,11 +34,12 @@ class Memory():
         retValue = ""
         index = 0
         for reg in self.eeprom:
-            retValue += f"Adresse: {index:02X}, " + str(reg) + '\n'
+            retValue += f"Adresse: {index:02X}, Bank 0: {str(reg[0])}, Bank 1: {str(reg[1])}'\n'"
             index += 1
         return retValue
     
     def __setitem__(self, index, value):
+        
         self.eeprom[index] = value
 
     def __getitem__(self, index):
