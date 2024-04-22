@@ -66,8 +66,6 @@ class TblPortButton(QPushButton):
             self.setText('1')
     
 class MainWindow(QMainWindow):
-
-    lst = Listing()
     
     sig_steprequest = pyqtSignal(bool)
 
@@ -208,18 +206,21 @@ class MainWindow(QMainWindow):
     @pyqtSlot()
     def open_file(self):
         filename = QFileDialog.getOpenFileName(self, "Open File", "", "Listing (*.LST);; All Files (*)")
-        self.lst.create_instructions(filename[0])
+        print(filename)
+        self.lst = Listing(filename[0])
         with open(filename[0], 'r') as file:
             try:
                 self.p_thread.terminate()
+                print("Thread terminated")
             except Exception:
-                pass
+                print("No Thread to terminate")
                 
             self.lbl_code.setText(file.read())
+            print(self.lst.get_instructions())
             self.p = Processor(self.lst.get_instructions())
-        self.p.sig_mem.connect(self.setMemData)
-        self.sig_steprequest.connect(self.p.step)
-        self.p_thread = QThread()
-        self.p.moveToThread(self.p_thread)
-        self.p_thread.start()
+            self.p.sig_mem.connect(self.setMemData)
+            self.sig_steprequest.connect(self.p.step)
+            self.p_thread = QThread()
+            self.p.moveToThread(self.p_thread)
+            self.p_thread.start()
            

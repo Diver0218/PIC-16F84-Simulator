@@ -2,18 +2,17 @@ import os
 
 class Listing():
 
-    def __init__(self) -> None:
-        self.filePath = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "ExamplesListings", "TPicSim1.LST")
+    def __init__(self, file) -> None:
+        self.instructions = []
+        self.readFile(file)
+        #self.filePath = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "ExamplesListings", "TPicSim1.LST")
 
     filePath : str
 
     instructions = []
 
-    def create_instructions(self, file):
-        self.readFile(file)
-        # print(self)
 
-    def readFile(self, file = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "ExamplesListings", "TPicSim1.LST")):
+    def readFile(self, file): #= os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "ExamplesListings", "TPicSim1.LST")):
         pc_index = 0
         with open(file, 'r') as file:
             for line in file:
