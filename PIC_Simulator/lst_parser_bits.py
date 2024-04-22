@@ -254,11 +254,17 @@ class Listing():
                 'inst': 'sleep',
             }
         
-        if (opcode & 0b1111_1111_0000_0000) == 0b0011_1010_0000_0000:
+        if (opcode & 0b1111_1111_0000_0000) == 0b0011_1100_0000_0000:
             return {
                 'inst': 'sublw',
                 'literal': opcode & 0b0000_0000_1111_1111,
             }
             
+        if (opcode & 0b1111_1111_0000_0000) == 0b0011_1010_0000_0000:
+            return {
+                'inst': 'xorlw',
+                'literal': opcode & 0b0000_0000_1111_1111,
+            }
+        
     def get_instructions(self):
         return self.instructions

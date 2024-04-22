@@ -1,6 +1,9 @@
 from model.memory import Memory
 from model.registers import W_Register
 from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot
+#debug
+from PyQt6.QtWidgets import QDialog
+#enddebug
 
 STATUS = 0x03
 Z = 2
@@ -22,7 +25,7 @@ class Processor(QObject):
     def __init__(self, inst) -> None:
         super().__init__()
         self.inst = inst
-        self.mem.inc_pc()
+        self.sig_mem.emit(self.mem)
         
     def set_instructions(self, inst):
         self.inst = inst
@@ -297,80 +300,86 @@ class Processor(QObject):
     def step(self):
         self.execute_instruction()
         self.update_mem()
+        #debug
+        #print("Processor: Funktion aufgerufen: step")
+        print(self.W)
+        #enddebug
            
     def execute_instruction(self):
         inst = self.inst[self.mem.pc]
-        match inst:
+        print("\n")
+        print(inst)
+        match inst['inst']:
             case 'addlw':
-                self.addlw(inst.k)
+                self.addlw(inst['literal'])
             case 'andlw':
-                self.andlw(inst.k)
+                self.andlw(inst['literal'])
             case 'addwf':
-                self.addwf(inst.f, inst.d)
+                self.addwf(inst['file'], inst['destination'])
             case 'andwf':
-                self.andwf(inst.f, inst.d)
+                self.andwf(inst['file'], inst['destination'])
             case 'bcf':
-                self.bcf(inst.f, inst.b)
+                self.bcf(inst['file'], inst['bit'])
             case 'btfsc':
-                self.btfsc(inst.f, inst.b)
+                self.btfsc(inst['file'], inst['bit'])
             case 'bsf':
-                self.bsf(inst.f, inst.b)
+                self.bsf(inst['file'], inst['bit'])
             case 'btfss':
-                self.btfss(inst.f, inst.b)
+                self.btfss(inst['file'], inst['bit'])
             case 'call':
-                self.call(inst.k)
+                self.call(inst['literal'])
             case 'clrf':
-                self.clrf(inst.f)
+                self.clrf(inst['file'])
             case 'clrw':
                 self.clrw()
             case 'clrwdt':
                 self.clrwdt()
             case 'comf':
-                self.comf(inst.f, inst.d)
+                self.comf(inst['file'], inst['destination'])
             case 'decfsz':
-                self.decfsz(inst.f, inst.d)
+                self.decfsz(inst['file'], inst['destination'])
             case 'decf':
-                self.decf(inst.f, inst.d)
+                self.decf(inst['file'], inst['destination'])
             case 'goto':
-                self.goto(inst.k)
+                self.goto(inst['literal'])
             case 'incf':
-                self.incf(inst.f, inst.d)
+                self.incf(inst['file'], inst['destination'])
             case 'incfsz':
-                self.incfsz(inst.f, inst.d)
+                self.incfsz(inst['file'], inst['destination'])
             case 'iorlw':
-                self.iorlw(inst.k)
+                self.iorlw(inst['literal'])
             case 'iorwf':
-                self.iorwf(inst.f, inst.d)
+                self.iorwf(inst['file'], inst['destination'])
             case 'movlw':
-                self.movlw(inst.k)
+                print ("in Case movlw")
+                self.movlw(inst['literal'])
             case 'movf':
-                self.movf(inst.f, inst.d)
+                self.movf(inst['file'], inst['destination'])
             case 'movwf':
-                self.movwf(inst.f)
+                self.movwf(inst['file'])
             case 'nop':
                 self.nop()
             case 'retfie':
                 self.retfie()
             case 'retlw':
-                self.retlw(inst.k)
+                self.retlw(inst['literal'])
             case 'return':
                 self._return()
             case 'rlf':
-                self.rlf(inst.f, inst.d)
+                self.rlf(inst['file'], inst['destination'])
             case 'rrf':
-                self.rrf(inst.f, inst.d)
+                self.rrf(inst['file'], inst['destination'])
             case 'sleep':
                 self.sleep()
             case 'sublw':
-                self.sublw(inst.k)
+                self.sublw(inst['literal'])
             case 'subwf':
-                self.subwf(inst.f, inst.d)
+                self.subwf(inst['file'], inst['destination'])
             case 'swapf':
-                self.swapf(inst.f, inst.d)
+                self.swapf(inst['file'], inst['destination'])
             case 'xorlw':
-                self.xorlw(inst.k)
+                self.xorlw(inst['literal'])
             case 'xorwf':
-                self.xorwf(inst.f, inst.d)
+                self.xorwf(inst['file'], inst['destination'])
             case _:
                 pass
-            

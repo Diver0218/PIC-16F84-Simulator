@@ -6,6 +6,10 @@ from PyQt6.QtCore import QThread, pyqtSignal, pyqtSlot
 from control.processor import Processor
 from lst_parser_bits import Listing
 from pathlib import Path
+from model.memory import Memory
+#debug
+from PyQt6.QtWidgets import QDialog
+#enddebug
 
 
 
@@ -52,6 +56,10 @@ class MemTable(QTableWidget):
     
 class MainWindow(QMainWindow):
 
+    lst = Listing()
+    
+    sig_steprequest = pyqtSignal(bool)
+
     def __init__(self):
         super().__init__()
         self.setWindowTitle('PIC-16F84-Simulator')
@@ -59,8 +67,8 @@ class MainWindow(QMainWindow):
     def create_window(self): 
 ##########################
 #ACHTUNG nur zum testen
-        self.lst = Listing()
-        self.p = Processor(self.lst.get_instructions())
+        #self.lst = Listing()
+        #self.p = Processor(self.lst.get_instructions())
 ##########################
 
         #main
@@ -124,6 +132,8 @@ class MainWindow(QMainWindow):
         self.lbl_timer = QLabel("0us")
         self.tableData : list
         
+        self.btn_step.clicked.connect(self.btn_step_method)
+        
         self.lay_runctrl.addWidget(self.btn_step)
         self.lay_runctrl.addWidget(self.btn_run)
         self.lay_runctrl.addWidget(self.btn_stop)
@@ -169,14 +179,21 @@ class MainWindow(QMainWindow):
         self.show()
         self.tbl_mem.show()
 
+    @pyqtSlot(Memory)
     def setMemData(self, data):
+        #debug:
+        #print("Funktion aufgerufen: setMemData")
+        #enddebug
         self.tbl_mem.setData(data)
         self.tbl_porta.setPortData(data, 5)
         self.tbl_portb.setPortData(data, 6)
 
     @pyqtSlot()
     def btn_step_method(self):
-        self.step_request.emit(True)
+        #debug
+        print("Funktion aufgerufen: btn_step_method")
+        #enddebug
+        self.sig_steprequest.emit(True)
     
     @pyqtSlot()
     def open_file(self):
@@ -188,8 +205,11 @@ class MainWindow(QMainWindow):
             except Exception:
                 pass
                 
-            self.p = Processor(self.lst.get_instructions())
-            self.p_thread = QThread()
-            self.p.moveToThread(self.p_thread)
-            self.p_thread.start()
             self.lbl_code.setText(file.read())
+            self.p = Processor(self.lst.get_instructions())
+        self.p.sig_mem.connect(self.setMemData)
+        self.sig_steprequest.connect(self.p.step)
+        self.p_thread = QThread()
+        self.p.moveToThread(self.p_thread)
+        self.p_thread.start()
+           
