@@ -54,7 +54,6 @@ class MainWindow(QMainWindow):
 
     def __init__(self):
         super().__init__()
-        self.setWindowTitle('PIC-16F84-Simulator')
 
     def create_window(self): 
 ##########################
