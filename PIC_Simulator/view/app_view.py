@@ -1,10 +1,15 @@
-from PyQt6.QtWidgets import QWidget, QLabel, QVBoxLayout, QHBoxLayout, QPushButton, QTableWidget, QTableWidgetItem, QMenuBar, QMenu, QMainWindow, QLayout
+from PyQt6.QtWidgets import QWidget, QLabel, QVBoxLayout, QHBoxLayout, QPushButton, QTableWidget, QTableWidgetItem, QMenuBar, QMenu, QMainWindow, QLayout, QFileDialog
 from PyQt6.QtWidgets import QLineEdit
 from PyQt6.QtCore import QRect
 import sys
-from PyQt6.QtCore import QThread, pyqtSignal
+from PyQt6.QtCore import QThread, pyqtSignal, pyqtSlot
 from control.processor import Processor
 from lst_parser_bits import Listing
+from pathlib import Path
+from model.memory import Memory
+#debug
+from PyQt6.QtWidgets import QDialog
+#enddebug
 
 
 
@@ -62,28 +67,32 @@ class TblPortButton(QPushButton):
     
 class MainWindow(QMainWindow):
 
+    lst = Listing()
+    
+    sig_steprequest = pyqtSignal(bool)
+
     def __init__(self):
         super().__init__()
 
     def create_window(self): 
 ##########################
 #ACHTUNG nur zum testen
-        self.lst = Listing()
-        self.p = Processor(self.lst.get_instructions())
+        #self.lst = Listing()
+        #self.p = Processor(self.lst.get_instructions())
 ##########################
 
         #main
-        widg_main = QWidget()
-        lay_main = QHBoxLayout()
+        self.widg_main = QWidget()
+        self.lay_main = QHBoxLayout()
         
         #regs
-        widg_reg = QWidget(parent=widg_main)
-        widg_reg.setGeometry(QRect(0, 0, 1631, 2000))
-        lay_reg = QVBoxLayout(widg_reg)
+        self.widg_reg = QWidget(parent=self.widg_main)
+        self.widg_reg.setGeometry(QRect(0, 0, 1631, 2000))
+        self.lay_reg = QVBoxLayout(self.widg_reg)
         self.tbl_porta = MemTable(3, 8)
         self.tbl_portb = MemTable(3, 8)
         self.tbl_mem = MemTable(80, 9)
-        lbl_sfr = QLabel("SFR")
+        self.lbl_sfr = QLabel("SFR")
         
         self.tbl_porta.setHorizontalHeaderLabels(['RA 7','RA 6','RA 5','RA 4','RA 3','RA 2','RA 1','RA 0'])
         self.tbl_porta.setVerticalHeaderLabels(['TRIS','i/o','RA'])
@@ -100,75 +109,79 @@ class MainWindow(QMainWindow):
         self.tbl_mem.resizeRowsToContents()
         self.tbl_mem.setFixedWidth(392)
         
-        lay_reg.addWidget(self.tbl_porta)
-        lay_reg.addWidget(self.tbl_portb)
-        lay_reg.addWidget(self.tbl_mem)
+        self.lay_reg.addWidget(self.tbl_porta)
+        self.lay_reg.addWidget(self.tbl_portb)
+        self.lay_reg.addWidget(self.tbl_mem)
         
         
         #Code
-        widg_code = QWidget(parent=widg_main)
-        lay_code = QVBoxLayout(widg_code)
-        lbl_code = QLabel("lskdugaldkgjsdlgkjbasdjgkbsdjgdfgdGSDGsdds\nwefwefewfwefwefwefWEFWefWEGWegewG\n hfgduzsgkeriugziebsztieruztvgerzuvteuzteriuvziguzrgiuzrgkazgrzaergkzeragkreuz")
-        
-        lay_code.addWidget(lbl_code)
+        self.widg_code = QWidget(parent=self.widg_main)
+        self.lay_code = QVBoxLayout(self.widg_code)
+        self.lbl_code = QLabel("lskdugaldkgjsdlgkjbasdjgkbsdjgdfgdGSDGsdds\nwefwefewfwefwefwefWEFWefWEGWegewG\n hfgduzsgkeriugziebsztieruztvgerzuvteuzteriuvziguzrgiuzrgkazgrzaergkzeragkreuz")
+
+        self.lay_code.addWidget(self.lbl_code)
         
         #Run Control
-        widg_runctrl = QWidget(parent=widg_main)
-        lay_runctrl = QVBoxLayout(widg_runctrl)
+        self.widg_runctrl = QWidget(parent=self.widg_main)
+        self.lay_runctrl = QVBoxLayout(self.widg_runctrl)
         
-        widg_brk = QWidget(parent=widg_runctrl)
-        lay_brk = QHBoxLayout(widg_brk)
+        self.widg_brk = QWidget(parent=self.widg_runctrl)
+        self.lay_brk = QHBoxLayout(self.widg_brk)
         
-        widg_freq = QWidget(parent=widg_runctrl)
-        lay_freq = QHBoxLayout(widg_freq)
+        self.widg_freq = QWidget(parent=self.widg_runctrl)
+        self.lay_freq = QHBoxLayout(self.widg_freq)
         
-        btn_step = QPushButton('Step')
-        btn_run = QPushButton('Run')
-        btn_stop = QPushButton('Stop')
-        btn_reset = QPushButton('Reset')
-        txtbox_brk = QLineEdit("-")
-        txtbox_freq = QLineEdit("4.0")
-        btn_setbrk = QPushButton('Set')
-        btn_setfreq = QPushButton('Set')
-        lbl_timer = QLabel("0us")
+        self.btn_step = QPushButton('Step')
+        self.btn_run = QPushButton('Run')
+        self.btn_stop = QPushButton('Stop')
+        self.btn_reset = QPushButton('Reset')
+        self.txtbox_brk = QLineEdit("-")
+        self.txtbox_freq = QLineEdit("4.0")
+        self.btn_setbrk = QPushButton('Set')
+        self.btn_setfreq = QPushButton('Set')
+        self.lbl_timer = QLabel("0us")
+
         
-        lay_runctrl.addWidget(btn_step)
-        lay_runctrl.addWidget(btn_run)
-        lay_runctrl.addWidget(btn_stop)
-        lay_runctrl.addWidget(btn_reset)
+        self.btn_step.clicked.connect(self.btn_step_method)
         
-        lay_brk.addWidget(txtbox_brk)
-        lay_brk.addWidget(btn_setbrk)
+        self.lay_runctrl.addWidget(self.btn_step)
+        self.lay_runctrl.addWidget(self.btn_run)
+        self.lay_runctrl.addWidget(self.btn_stop)
+        self.lay_runctrl.addWidget(self.btn_reset)
         
-        lay_freq.addWidget(txtbox_freq)
-        lay_freq.addWidget(btn_setfreq)
+        self.lay_brk.addWidget(self.txtbox_brk)
+        self.lay_brk.addWidget(self.btn_setbrk)
         
-        lay_runctrl.addWidget(widg_brk)
-        lay_runctrl.addWidget(widg_freq)
+        self.lay_freq.addWidget(self.txtbox_freq)
+        self.lay_freq.addWidget(self.btn_setfreq)
         
-        lay_runctrl.addWidget(lbl_timer)
+        self.lay_runctrl.addWidget(self.widg_brk)
+        self.lay_runctrl.addWidget(self.widg_freq)
+        
+        self.lay_runctrl.addWidget(self.lbl_timer)
         
         
         #menubar
         menubar = QMenuBar(self)
         file_menu = QMenu("Datei", self)
-        open_action = file_menu.addAction("Öffnen")
+        self.open_action = file_menu.addAction("Öffnen")
         menubar.addMenu(file_menu)
+        self.open_action.triggered.connect(self.open_file)
 
         self.setMenuBar(menubar)
-        self.setCentralWidget(widg_main)
+        self.setCentralWidget(self.widg_main)
         menubar.raise_()
         self.resize(1200, 600)
         
         
         #Complete
-        lay_main.addWidget(widg_reg)
-        lay_main.addWidget(widg_code)
-        lay_main.addWidget(widg_runctrl)
-        lay_main.setSizeConstraint(QLayout.SizeConstraint.SetNoConstraint)
+        self.lay_main.addWidget(self.widg_reg)
+        self.lay_main.addWidget(self.widg_code)
+        self.lay_main.addWidget(self.widg_runctrl)
+        self.lay_main.setSizeConstraint(QLayout.SizeConstraint.SetNoConstraint)
 
-        widg_main.setLayout(lay_main)
-        widg_main.setWindowTitle('PIC-16F84-Simulator')
+        self.widg_main.setLayout(self.lay_main)
+        self.widg_main.setWindowTitle('PIC-16F84-Simulator')
         
 
     def init_window(self):
@@ -176,10 +189,37 @@ class MainWindow(QMainWindow):
         self.show()
         self.tbl_mem.show()
 
-    def setMemData(self):
-        self.tbl_mem.setData(self.p.mem)
-        self.tbl_porta.setPortData(self.p.mem, 5)
-        self.tbl_portb.setPortData(self.p.mem, 6)
-        
+    @pyqtSlot(Memory)
+    def setMemData(self, data):
+        #debug:
+        #print("Funktion aufgerufen: setMemData")
+        #enddebug
+        self.tbl_mem.setData(data)
+        self.tbl_porta.setPortData(data, 5)
+        self.tbl_portb.setPortData(data, 6)
 
+    @pyqtSlot()
+    def btn_step_method(self):
+        #debug
+        print("Funktion aufgerufen: btn_step_method")
+        #enddebug
+        self.sig_steprequest.emit(True)
     
+    @pyqtSlot()
+    def open_file(self):
+        filename = QFileDialog.getOpenFileName(self, "Open File", "", "Listing (*.LST);; All Files (*)")
+        self.lst.create_instructions(filename[0])
+        with open(filename[0], 'r') as file:
+            try:
+                self.p_thread.terminate()
+            except Exception:
+                pass
+                
+            self.lbl_code.setText(file.read())
+            self.p = Processor(self.lst.get_instructions())
+        self.p.sig_mem.connect(self.setMemData)
+        self.sig_steprequest.connect(self.p.step)
+        self.p_thread = QThread()
+        self.p.moveToThread(self.p_thread)
+        self.p_thread.start()
+           

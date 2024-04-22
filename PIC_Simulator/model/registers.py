@@ -119,6 +119,17 @@ class Register():
     def __neg__(self):
         return Register(-self.value)
     
+    def __mod__(self, other):
+        if isinstance(other, Register):
+            retValue = self.value % other.value
+            # overload flag
+        elif isinstance(other, int):
+            retValue = self.value % other
+            # overload flag
+        else:
+            raise TypeError("Unsupported operand type(s) for +: 'Register' and '{}'".format(type(other)))
+        return Register(retValue)
+    
 class W_Register(Register):
 
     def __init__(self, value):
@@ -171,3 +182,4 @@ class W_Register(Register):
         else:
             raise TypeError("Unsupported operand type(s) for +=: 'Register' and '{}'".format(type(other)))
         return self
+    
