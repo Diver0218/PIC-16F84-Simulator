@@ -189,13 +189,13 @@ class MainWindow(QMainWindow):
         self.tbl_mem.show()
 
     @pyqtSlot(Memory)
-    def setMemData(self, data):
+    def setMemData(self, mem):
         #debug:
         #print("Funktion aufgerufen: setMemData")
         #enddebug
-        self.tbl_mem.setData(data)
-        self.tbl_porta.setPortData(data, 5)
-        self.tbl_portb.setPortData(data, 6)
+        self.tbl_mem.setData(mem)
+        self.tbl_porta.setPortData(mem, 5)
+        self.tbl_portb.setPortData(mem, 6)
 
     @pyqtSlot()
     def btn_step_method(self):

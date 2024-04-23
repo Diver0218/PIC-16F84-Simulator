@@ -22,7 +22,7 @@ class Memory():
     # EECON1 : Register
     # EECON2 : Register
 
-    eeprom = [[Register(0)] *2 ] * 80
+    eeprom = [[Register(0) for _ in range(80)] for _ in range(2)]
 
     stackpointer : int = 0
 
@@ -34,25 +34,23 @@ class Memory():
 
     def __str__(self):
         retValue = ""
-        index = 0
-        for reg in self.eeprom:
-            retValue += f"Adresse: {index:02X}, Bank 0: {str(reg[0])}, Bank 1: {str(reg[1])}'\n'"
-            index += 1
+        bank0 = self.eeprom[0]
+        bank1 = self.eeprom[1]
+        for index in range(len(bank0)):
+            retValue += f"Adresse: {index:02X}, Bank 0: {str(bank0[index])}, Bank 1: {str(bank1[index])}'\n'"
         return retValue
     
     def __setitem__(self, index, value):
-        bank = self.eeprom[0,3].test_bit(5)
-        if bank == 1 and index in self.bank_relevant_adr:
-            self.eeprom[1, index] = value
+        if self.eeprom[0][3].test_bit(5) and index in self.bank_relevant_adr:
+            self.eeprom[1][index] = value
         else:
-            self.eeprom[0, index] = value
+            self.eeprom[0][index] = value
 
     def __getitem__(self, index):
-        bank = self.eeprom[0,3].test_bit(5)
-        if bank == 1 and index in self.bank_relevant_adr:
-            return self.eeprom[1, index]    
+        if self.eeprom[0][3].test_bit(5) and index in self.bank_relevant_adr:
+            return self.eeprom[1][index]    
         else:
-            return self.eeprom[0, index]    
+            return self.eeprom[0][index]    
             
                     
     def inc_pc(self, amount : int = 1):

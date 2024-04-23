@@ -3,6 +3,7 @@ from model.registers import W_Register
 from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot
 #debug
 from PyQt6.QtWidgets import QDialog
+import debugpy
 #enddebug
 
 STATUS = 0x03
@@ -298,11 +299,13 @@ class Processor(QObject):
         
     @pyqtSlot(bool)
     def step(self):
+        debugpy.debug_this_thread()
         self.execute_instruction()
         self.update_mem()
         #debug
         #print("Processor: Funktion aufgerufen: step")
         print(self.W)
+        print(self.mem)
         #enddebug
            
     def execute_instruction(self):
