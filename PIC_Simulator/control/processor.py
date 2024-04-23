@@ -51,7 +51,7 @@ class Processor(QObject):
             self.carry_flag(self.W)
             self.zero_flag(self.W)
         else:
-            self.mem.eeprom[f] += self.W
+            self.mem[f] += self.W
             self.carry_flag(self.mem[f])
             self.zero_flag(self.mem[f])
         self.mem.inc_pc()
