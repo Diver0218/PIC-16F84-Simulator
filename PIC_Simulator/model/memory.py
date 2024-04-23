@@ -50,8 +50,13 @@ class Memory():
         if self.eeprom[0][3].test_bit(5) and index in self.bank_relevant_adr:
             return self.eeprom[1][index]    
         else:
-            return self.eeprom[0][index]    
-            
+            return self.eeprom[0][index] 
+
+    def get_bank_specific_register(self, index, bank):
+        if bank and index in self.bank_relevant_adr:
+            return self.eeprom[1][index]    
+        else:
+            return self.eeprom[0][index]
                     
     def inc_pc(self, amount : int = 1):
         self.pc += amount
