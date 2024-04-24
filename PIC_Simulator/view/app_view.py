@@ -28,11 +28,11 @@ class MemTable(QTableWidget):
         for i in range(rows):
             for j in range(columns):
                 if j == 8:
-                    item = mem[i].value
+                    item = mem.get_bank_specific_register(i, 0).value
                     newitem = QTableWidgetItem(str(item))
                     self.setItem(i , j, newitem)
                 else:
-                    item = mem[i].test_bit(j)
+                    item = mem.get_bank_specific_register(i, 0).test_bit(j)
                     newitem = QTableWidgetItem(str(item))
                     self.setItem(i , j, newitem)
             verticaHeaders.append(str(hex(i))[2:])
@@ -44,10 +44,10 @@ class MemTable(QTableWidget):
         columns = self.columnCount()
         for i in range(columns):
             tbl_button = TblPortButton()
-            tbl_button.setText(str(mem[adr].test_bit(7 - i)))
+            tbl_button.setText(str(mem.get_bank_specific_register(adr, 0).test_bit(7 - i)))
             self.setCellWidget(2, i, tbl_button)
         for i in range(columns):
-            item = mem[adr].test_bit(7 - i) #adr muss noch um +0x80 verschoben werden
+            item = mem.get_bank_specific_register(adr, 1).test_bit(7 - i) #adr muss noch um +0x80 verschoben werden
             self.setItem(0, i, QTableWidgetItem(str(item))) # evtl hier auch ToggleButton einfügen
             if item:
                 self.setItem(1, i, QTableWidgetItem('i'))
@@ -192,13 +192,13 @@ class MainWindow(QMainWindow):
         self.tbl_mem.show()
 
     @pyqtSlot(Memory)
-    def setMemData(self, data):
+    def setMemData(self, mem):
         #debug:
         #print("Funktion aufgerufen: setMemData")
         #enddebug
-        self.tbl_mem.setData(data)
-        self.tbl_porta.setPortData(data, 5)
-        self.tbl_portb.setPortData(data, 6)
+        self.tbl_mem.setData(mem)
+        self.tbl_porta.setPortData(mem, 5)
+        self.tbl_portb.setPortData(mem, 6)
 
     @pyqtSlot()
     def btn_step_method(self):

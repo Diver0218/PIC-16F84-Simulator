@@ -55,7 +55,7 @@ class Processor(QObject):
             self.carry_flag(self.W)
             self.zero_flag(self.W)
         else:
-            self.mem.eeprom[f] += self.W
+            self.mem[f] += self.W
             self.carry_flag(self.mem[f])
             self.zero_flag(self.mem[f])
         self.mem.inc_pc()
@@ -306,12 +306,14 @@ class Processor(QObject):
         
     @pyqtSlot(bool)
     def step(self):
+        debugpy.debug_this_thread()
         self.execute_instruction()
         self.update_mem()
         self.update_pc()
         #debug
         #print("Processor: Funktion aufgerufen: step")
         print(self.W)
+        print(self.mem)
         #enddebug
            
     def execute_instruction(self):
