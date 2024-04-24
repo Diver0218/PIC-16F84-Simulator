@@ -1,14 +1,15 @@
-from PyQt6.QtWidgets import QWidget, QLabel, QVBoxLayout, QHBoxLayout, QPushButton, QTableWidget, QTableWidgetItem, QMenuBar, QMenu, QMainWindow, QLayout, QFileDialog
+from PyQt6.QtWidgets import QWidget, QListWidget, QListWidgetItem, QLabel, QVBoxLayout, QHBoxLayout, QPushButton, QTableWidget, QTableWidgetItem, QMenuBar, QMenu, QMainWindow, QLayout, QFileDialog
 from PyQt6.QtWidgets import QLineEdit
 from PyQt6.QtCore import QRect
 import sys
-from PyQt6.QtCore import QThread, pyqtSignal, pyqtSlot
+from PyQt6.QtCore import QThread, pyqtSignal, pyqtSlot, Qt
 from control.processor import Processor
 from lst_parser_bits import Listing
 from pathlib import Path
 from model.memory import Memory
 #debug
 from PyQt6.QtWidgets import QDialog
+from PyQt6 import QtGui
 #enddebug
 
 
@@ -68,6 +69,7 @@ class TblPortButton(QPushButton):
 class MainWindow(QMainWindow):
     
     sig_steprequest = pyqtSignal(bool)
+    code_lbls = []
 
     def __init__(self):
         super().__init__()
@@ -85,7 +87,6 @@ class MainWindow(QMainWindow):
         
         #regs
         self.widg_reg = QWidget(parent=self.widg_main)
-        self.widg_reg.setGeometry(QRect(0, 0, 1631, 2000))
         self.lay_reg = QVBoxLayout(self.widg_reg)
         self.tbl_porta = MemTable(3, 8)
         self.tbl_portb = MemTable(3, 8)
@@ -115,9 +116,10 @@ class MainWindow(QMainWindow):
         #Code
         self.widg_code = QWidget(parent=self.widg_main)
         self.lay_code = QVBoxLayout(self.widg_code)
-        self.lbl_code = QLabel("lskdugaldkgjsdlgkjbasdjgkbsdjgdfgdGSDGsdds\nwefwefewfwefwefwefWEFWefWEGWegewG\n hfgduzsgkeriugziebsztieruztvgerzuvteuzteriuvziguzrgiuzrgkazgrzaergkzeragkreuz")
+        self.list_code = QListWidget()
+        # self.lbl_code = QLabel("lskdugaldkgjsdlgkjbasdjgkbsdjgdfgdGSDGsdds\nwefwefewfwefwefwefWEFWefWEGWegewG\n hfgduzsgkeriugziebsztieruztvgerzuvteuzteriuvziguzrgiuzrgkazgrzaergkzeragkreuz")
 
-        self.lay_code.addWidget(self.lbl_code)
+        self.lay_code.addWidget(self.list_code)
         
         #Run Control
         self.widg_runctrl = QWidget(parent=self.widg_main)
@@ -213,14 +215,48 @@ class MainWindow(QMainWindow):
                 self.p_thread.terminate()
                 print("Thread terminated")
             except Exception:
-                print("No Thread to terminate")
-                
-            self.lbl_code.setText(file.read())
+                print("No Thread to termina te")
+            self.init_new_processor()
+            self.show_Code(file)
             print(self.lst.get_instructions())
-            self.p = Processor(self.lst.get_instructions())
-            self.p.sig_mem.connect(self.setMemData)
-            self.sig_steprequest.connect(self.p.step)
-            self.p_thread = QThread()
-            self.p.moveToThread(self.p_thread)
-            self.p_thread.start()
-           
+            
+    def init_new_processor(self):
+        self.p = Processor(self.lst.get_instructions())
+        self.p.sig_mem.connect(self.setMemData)
+        self.sig_steprequest.connect(self.p.step)
+        self.p.sig_pc.connect(self.highlight_instruction)
+        self.p_thread = QThread()
+        self.p.moveToThread(self.p_thread)
+        self.p_thread.start()
+
+    def show_Code(self, file):
+        if self.code_lbls:
+            for line in self.code_lbls:
+                self.list_code.clear()
+        self.code_lbls = []
+        for line in file:
+            if line[0] != ' ':
+                pc = int(line[0:4], 16)
+            else:
+                pc = -1
+            item = QListWidgetItem(line)
+            item.setFlags(item.flags() | Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable)
+            item.setFont(QtGui.QFont('Consolas', 10))
+            self.code_lbls.append({
+                'pc' : pc,
+                'label' : item
+            })
+        for line in self.code_lbls:
+            self.list_code.addItem(line['label'])
+            
+    @pyqtSlot(int)
+    def highlight_instruction(self, pc):
+        print(pc)
+        for i, line in enumerate(self.code_lbls):
+            if line['pc'] == pc:
+                item = self.list_code.item(i)
+                item.setSelected(True)
+                self.list_code.scrollToItem(item)
+            else:
+                item = self.list_code.item(i)
+                item.setSelected(False)

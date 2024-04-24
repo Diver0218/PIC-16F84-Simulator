@@ -3,6 +3,7 @@ from model.registers import W_Register
 from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot
 #debug
 from PyQt6.QtWidgets import QDialog
+import debugpy
 #enddebug
 
 STATUS = 0x03
@@ -21,11 +22,15 @@ class Processor(QObject):
     sig_W = pyqtSignal(W_Register)
     sig_quartz = pyqtSignal(int)
     sig_inst = pyqtSignal(list)
+    sig_pc = pyqtSignal(int)
 
     def __init__(self, inst) -> None:
         super().__init__()
         self.inst = inst
-        self.sig_mem.emit(self.mem)
+        self.mem.pc = 0
+        self.update_pc()
+        self.update_mem()
+        
         
     def set_instructions(self, inst):
         self.inst = inst
@@ -296,10 +301,14 @@ class Processor(QObject):
     def update_inst(self, inst):
         self.sig_inst.emit(self.inst)
         
+    def update_pc(self):
+        self.sig_pc.emit(self.mem.pc)
+        
     @pyqtSlot(bool)
     def step(self):
         self.execute_instruction()
         self.update_mem()
+        self.update_pc()
         #debug
         #print("Processor: Funktion aufgerufen: step")
         print(self.W)
