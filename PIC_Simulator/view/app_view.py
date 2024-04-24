@@ -53,6 +53,12 @@ class MemTable(QTableWidget):
                 self.setItem(1, i, QTableWidgetItem('i'))
             else:
                 self.setItem(1, i, QTableWidgetItem('o'))
+
+    def resizePorts(self):
+        for i in range(7):
+            self.rowResized(i, 5, 5)
+            self.columnResized(i, 5, 5)
+        self.setFixedSize(292, 98)
         
             
 class TblPortButton(QPushButton):
@@ -95,18 +101,14 @@ class MainWindow(QMainWindow):
         
         self.tbl_porta.setHorizontalHeaderLabels(['RA 7','RA 6','RA 5','RA 4','RA 3','RA 2','RA 1','RA 0'])
         self.tbl_porta.setVerticalHeaderLabels(['TRIS','i/o','RA'])
-        self.tbl_porta.resizeColumnsToContents()
-        self.tbl_porta.resizeRowsToContents()
-        self.tbl_porta.setFixedSize(348, 98)
+        self.tbl_porta.resizePorts()
         self.tbl_portb.setHorizontalHeaderLabels(['RB 7','RB 6','RB 5','RB 4','RB 3','RB 2','RB 1','RB 0'])
         self.tbl_portb.setVerticalHeaderLabels(['TRIS','i/o','RB'])
-        self.tbl_portb.resizeColumnsToContents()
-        self.tbl_portb.resizeRowsToContents()
-        self.tbl_portb.setFixedSize(348, 98)
+        self.tbl_portb.resizePorts()
         self.tbl_mem.setHorizontalHeaderLabels(['Bit 0', 'Bit 1', 'Bit 2', 'Bit 3', 'Bit 4', 'Bit 5', 'Bit 6', 'Bit 6', 'Value'])
         self.tbl_mem.resizeColumnsToContents()
         self.tbl_mem.resizeRowsToContents()
-        self.tbl_mem.setFixedWidth(392)
+        self.tbl_mem.setFixedWidth(353)
         
         self.lay_reg.addWidget(self.tbl_porta)
         self.lay_reg.addWidget(self.tbl_portb)
@@ -171,7 +173,6 @@ class MainWindow(QMainWindow):
         self.setMenuBar(menubar)
         self.setCentralWidget(self.widg_main)
         menubar.raise_()
-        self.resize(1200, 600)
         
         
         #Complete
@@ -182,6 +183,7 @@ class MainWindow(QMainWindow):
 
         self.widg_main.setLayout(self.lay_main)
         self.widg_main.setWindowTitle('PIC-16F84-Simulator')
+        self.resize(1200, 600)
         
 
     def init_window(self):
