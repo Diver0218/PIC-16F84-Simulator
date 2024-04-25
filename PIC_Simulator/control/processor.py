@@ -1,5 +1,5 @@
 from model.memory import Memory
-from model.registers import W_Register
+from model.registers import W_Register, Register
 from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot
 #debug
 from PyQt6.QtWidgets import QDialog
@@ -42,7 +42,7 @@ class Processor(QObject):
     def addlw(self, k):
         self.W += k
         self.carry_flag(self.W)
-        self.digit_carry_flag(self.W)
+        self.digit_carry_flag_add(self.W, k)
         self.zero_flag(self.W)
         self.mem.inc_pc()
 
@@ -55,12 +55,12 @@ class Processor(QObject):
         if d == 0:
             self.W += self.mem[f]
             self.carry_flag(self.W)
-            self.digit_carry_flag(self.W)
+            self.digit_carry_flag_add(self.W, self.mem[f])
             self.zero_flag(self.W)
         else:
             self.mem[f] += self.W
             self.carry_flag(self.mem[f])
-            self.digit_carry_flag(self.mem[f])
+            self.digit_carry_flag_add(self.mem[f], self.W)
             self.zero_flag(self.mem[f])
         self.mem.inc_pc()
 
@@ -234,7 +234,7 @@ class Processor(QObject):
     def sublw(self, k):
         self.W = W_Register(k - self.W.value)
         self.carry_flag_sub(self.W)
-        self.digit_carry_flag(self.W)
+        self.digit_carry_flag_sub(self.W, k)
         self.zero_flag(self.W)
         self.mem.inc_pc()
 
@@ -242,20 +242,17 @@ class Processor(QObject):
         if d == 0:
             self.W = W_Register(-(self.W -self.mem[f]))
             self.carry_flag_sub(self.W)
-            self.digit_carry_flag(self.W)
+            self.digit_carry_flag_sub(self.W, self.mem[f])
             self.zero_flag(self.W)
         else:
             self.mem[f] -= self.W
             self.carry_flag(self.mem[f])
-            self.digit_carry_flag(self.mem[f])
+            self.digit_carry_flag_sub(self.mem[f], self.W)
             self.zero_flag(self.mem[f])
         self.mem.inc_pc()
 
     def swapf(self, f, d = 0):
         # Swap Nibbles in f
-        self.carry_flag(self.mem[f])
-        self.digit_carry_flag(self.mem[f])
-        self.zero_flag(self.mem[f])
         return
     
     def xorlw(self, k):
@@ -296,11 +293,27 @@ class Processor(QObject):
         else:
             self.mem[STATUS].set_bit(Z, 0)
             
-    def digit_carry_flag(self, reg):
-        # if reg.value > 0x0F:
-        #     reg.set(reg % 0x0F)
-        #     self.mem[STATUS].set_bit(DC, 1)
-        pass
+    def digit_carry_flag_add(self, reg, k):
+        masked_reg = reg.value & 0x0F
+        if isinstance(k, Register):
+            masked_k = k.value & 0x0F
+        else:
+            masked_k = k & 0x0F
+        if masked_reg + masked_k > 0x0F:
+            self.mem[STATUS].set_bit(DC, 1)
+        else:
+            self.mem[STATUS].set_bit(DC, 0)
+            
+    def digit_carry_flag_sub(self, reg, k):
+        masked_reg = reg.value & 0x0F
+        if isinstance(k, Register):
+            masked_k = k.value & 0x0F
+        else:
+            masked_k = k & 0x0F
+        if masked_reg + masked_k < 0x0F:
+            self.mem[STATUS].set_bit(DC, 1)
+        else:
+            self.mem[STATUS].set_bit(DC, 0)
             
     def update_mem(self):
         self.sig_mem.emit(self.mem)
