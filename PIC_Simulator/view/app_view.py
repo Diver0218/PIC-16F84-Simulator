@@ -144,6 +144,7 @@ class MainWindow(QMainWindow):
         self.lay_reg.addWidget(self.tbl_mem)
         self.lay_reg.addWidget(self.widg_sfr)
         
+        self.widg_reg.setFixedWidth(370)
         
         #Code
         self.widg_code = QWidget(self.widg_main)
@@ -192,6 +193,7 @@ class MainWindow(QMainWindow):
         
         self.lay_runctrl.addWidget(self.lbl_timer)
         
+        self.widg_runctrl.setFixedWidth(200)
         
         #menubar
         menubar = QMenuBar(self)
