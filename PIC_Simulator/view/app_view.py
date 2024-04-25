@@ -15,9 +15,11 @@ from PyQt6 import QtGui
 
 
 class MemTable(QTableWidget):
+    sig_update_bit = pyqtSignal(list)
 
-    def __init__(self, *args):
-        QTableWidget.__init__(self, *args)
+    def __init__(self, rows, columns, parent):
+        QTableWidget.__init__(self, rows, columns, parent)
+        self.sig_update_bit.connect(parent.update_single_register_bit)
         self.resizeColumnsToContents()
         self.resizeRowsToContents()
 
@@ -43,11 +45,11 @@ class MemTable(QTableWidget):
         rows = self.rowCount()
         columns = self.columnCount()
         for i in range(columns):
-            tbl_button = TblPortButton()
+            tbl_button = TblPortButton(adr, 7-i, self)
             tbl_button.setText(str(mem.get_bank_specific_register(adr, 0).test_bit(7 - i)))
             self.setCellWidget(2, i, tbl_button)
         for i in range(columns):
-            item = mem.get_bank_specific_register(adr, 1).test_bit(7 - i) #adr muss noch um +0x80 verschoben werden
+            item = mem.get_bank_specific_register(adr, 1).test_bit(7 - i)
             self.setItem(0, i, QTableWidgetItem(str(item))) # evtl hier auch ToggleButton einfügen
             if item:
                 self.setItem(1, i, QTableWidgetItem('i'))
@@ -59,23 +61,39 @@ class MemTable(QTableWidget):
             self.rowResized(i, 5, 5)
             self.columnResized(i, 5, 5)
         self.setFixedSize(292, 98)
-        
+    
+    @pyqtSlot(list)
+    def signal_update_bit(self, update):
+        self.sig_update_bit.emit(update)
             
 class TblPortButton(QPushButton):
-    def __init__(self, parent=None):
+    sig_update_bit = pyqtSignal(list)
+    port = 0
+    bit = 0
+
+    def __init__(self, n_port, n_bit, parent):
         super(TblPortButton, self).__init__(parent)
+        self.port = n_port
+        self.bit = n_bit
+        self.sig_update_bit.connect(parent.signal_update_bit)
         self.clicked.connect(self.toggleButton)
         
     def toggleButton(self): #Muss noch mit Memory verbunden werden
+        update = [self.port, self.bit]
         if self.text() == '1':
             self.setText('0')
+            update.append(0)
         else:
             self.setText('1')
+            update.append(1)
+        self.sig_update_bit.emit(update)
+        
     
 class MainWindow(QMainWindow):
     
     sig_steprequest = pyqtSignal(bool)
     sig_init = pyqtSignal(bool)
+    sig_update_register_bit = pyqtSignal(list)
     code_lbls = []
 
     def __init__(self):
@@ -96,9 +114,9 @@ class MainWindow(QMainWindow):
         #regs
         self.widg_reg = QWidget(parent=self.widg_main)
         self.lay_reg = QVBoxLayout(self.widg_reg)
-        self.tbl_porta = MemTable(3, 8)
-        self.tbl_portb = MemTable(3, 8)
-        self.tbl_mem = MemTable(80, 9)
+        self.tbl_porta = MemTable(3, 8, self)
+        self.tbl_portb = MemTable(3, 8, self)
+        self.tbl_mem = MemTable(80, 9, self)
         self.lbl_sfr = QLabel("SFR")
         
         self.tbl_porta.setHorizontalHeaderLabels(['RA 7','RA 6','RA 5','RA 4','RA 3','RA 2','RA 1','RA 0'])
@@ -107,7 +125,7 @@ class MainWindow(QMainWindow):
         self.tbl_portb.setHorizontalHeaderLabels(['RB 7','RB 6','RB 5','RB 4','RB 3','RB 2','RB 1','RB 0'])
         self.tbl_portb.setVerticalHeaderLabels(['TRIS','i/o','RB'])
         self.tbl_portb.resizePorts()
-        self.tbl_mem.setHorizontalHeaderLabels(['Bit 0', 'Bit 1', 'Bit 2', 'Bit 3', 'Bit 4', 'Bit 5', 'Bit 6', 'Bit 6', 'Value'])
+        self.tbl_mem.setHorizontalHeaderLabels(['Bit 0', 'Bit 1', 'Bit 2', 'Bit 3', 'Bit 4', 'Bit 5', 'Bit 6', 'Bit 7', 'Value'])
         self.tbl_mem.resizeColumnsToContents()
         self.tbl_mem.resizeRowsToContents()
         self.tbl_mem.setFixedWidth(353)
@@ -192,7 +210,7 @@ class MainWindow(QMainWindow):
         self.create_window()
         self.show()
         self.tbl_mem.show()
-        self.setMemData(Memory())
+        self.init_new_processor()
 
     @pyqtSlot(Memory)
     def setMemData(self, mem):
@@ -207,6 +225,10 @@ class MainWindow(QMainWindow):
     def btn_step_method(self):
         self.sig_steprequest.emit(True)
     
+    @pyqtSlot(list)
+    def update_single_register_bit(self, update):
+        self.sig_update_register_bit.emit(update)
+    
     @pyqtSlot()
     def open_file(self):
         filename = QFileDialog.getOpenFileName(self, "Open File", "", "Listing (*.LST);; All Files (*)")
@@ -218,7 +240,7 @@ class MainWindow(QMainWindow):
                 self.p_thread.terminate()
                 print("Thread terminated")
             except Exception:
-                print("No Thread to termina te")
+                print("No Thread to terminate")
             self.init_new_processor()
             self.show_Code(file)
             print(self.lst.get_instructions())
@@ -229,6 +251,8 @@ class MainWindow(QMainWindow):
         self.sig_steprequest.connect(self.p.step)
         self.p.sig_pc.connect(self.highlight_instruction)
         self.sig_init.connect(self.p.init_view)
+        self.sig_update_register_bit.connect(self.p.update_single_register_bit)
+        self.p.update_mem()
         self.p_thread = QThread()
         self.p.moveToThread(self.p_thread)
         self.p_thread.start()

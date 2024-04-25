@@ -322,6 +322,12 @@ class Processor(QObject):
         self.update_quartz()
         self.update_inst(self.inst)
         self.update_pc()
+
+    @pyqtSlot(list)
+    def update_single_register_bit(self, update):
+        debugpy.debug_this_thread()
+        self.mem[update[0]].set_bit(update[1], update[2])
+        self.update_mem()
            
     def execute_instruction(self):
         inst = self.inst[self.mem.pc]
