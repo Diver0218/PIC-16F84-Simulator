@@ -252,13 +252,18 @@ class MainWindow(QMainWindow):
             })
         for line in self.code_lbls:
             self.list_code.addItem(line['label'])
+        i = 0
+        while self.code_lbls[i]['pc'] != 0:
+            i += 1
+        self.list_code.item(i).setSelected(True)
+            
             
     @pyqtSlot(int)
     def highlight_instruction(self, pc):
         print(pc)
         for i, line in enumerate(self.code_lbls):
             if line['pc'] == pc:
-                item = self.list_code.item(i-1)
+                item = self.list_code.item(i)
                 item.setSelected(True)
                 self.list_code.scrollToItem(item)
             else:
