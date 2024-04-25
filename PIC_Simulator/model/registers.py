@@ -145,10 +145,8 @@ class W_Register(Register):
     def __iadd__(self, other):
         if isinstance(other, Register):
             self.value += other.value
-            # overload flag
         elif isinstance(other, int):
             self.value += other
-            # overload flag
         else:
             raise TypeError("Unsupported operand type(s) for +=: 'Register' and '{}'".format(type(other)))
         return self
