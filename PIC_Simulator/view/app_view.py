@@ -210,7 +210,8 @@ class MainWindow(QMainWindow):
     @pyqtSlot()
     def open_file(self):
         filename = QFileDialog.getOpenFileName(self, "Open File", "", "Listing (*.LST);; All Files (*)")
-        print(filename)
+        if not filename[0]:
+            return
         self.lst = Listing(filename[0])
         with open(filename[0], 'r') as file:
             try:
