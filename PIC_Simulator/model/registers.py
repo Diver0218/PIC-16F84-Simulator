@@ -7,17 +7,9 @@ class Register():
 
     def set(self, value):
         if isinstance(value, int):
-            if value > 0xFF:
-                self.set(value - 0xFF)
-                # set overload flagg
-            else:
-                self.value = value
+            self.value = value
         elif isinstance(value, Register):
-            if value.value > 0xFF:
-                self.set(value.value - 0xFF)
-                # set overload flagg
-            else:
-                self.value = value.value
+            self.value = value.value
         else:
             raise TypeError("Unsupported Type for 'set' method")
     
