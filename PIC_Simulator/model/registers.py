@@ -122,6 +122,15 @@ class Register():
             raise TypeError("Unsupported operand type(s) for +: 'Register' and '{}'".format(type(other)))
         return Register(retValue)
     
+    def __iadd__(self, other):
+        if isinstance(other, Register):
+            self.value += other.value
+        elif isinstance(other, int):
+            self.value += other
+        else:
+            raise TypeError("Unsupported operand type(s) for +=: 'Register' and '{}'".format(type(other)))
+        return self
+    
 class W_Register(Register):
 
     def __init__(self, value):
@@ -141,15 +150,6 @@ class W_Register(Register):
         else:
             raise TypeError("Unsupported operand type(s) for +: 'Register' and '{}'".format(type(other)))
         return W_Register(retValue)
-                
-    def __iadd__(self, other):
-        if isinstance(other, Register):
-            self.value += other.value
-        elif isinstance(other, int):
-            self.value += other
-        else:
-            raise TypeError("Unsupported operand type(s) for +=: 'Register' and '{}'".format(type(other)))
-        return self
     
     def __sub__(self, other):
         if isinstance(other, Register):
