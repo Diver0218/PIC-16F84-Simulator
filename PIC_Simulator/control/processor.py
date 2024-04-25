@@ -187,7 +187,7 @@ class Processor(QObject):
         self.mem.inc_pc()
                
     def movwf(self, f):
-        self.mem[f] = self.W
+        self.mem[f] = Register(self.W)
         self.mem.inc_pc()
     
     def nop(self):

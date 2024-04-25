@@ -215,7 +215,7 @@ class MainWindow(QMainWindow):
 
         self.widg_main.setLayout(self.lay_main)
         self.widg_main.setWindowTitle('PIC-16F84-Simulator')
-        self.resize(1200, 600)
+        self.resize(1800, 1000)
         
 
     def init_window(self):
