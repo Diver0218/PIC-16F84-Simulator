@@ -79,7 +79,7 @@ class Memory():
             self.stackpointer = 0
         else:
             self.stackpointer += 1
-        self.stack[self.stackpointer] = self.pc
+        self.stack[self.stackpointer] = self.pc + 1
 
 
     def pop_pc(self):
