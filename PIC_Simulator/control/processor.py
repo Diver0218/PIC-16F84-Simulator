@@ -233,7 +233,7 @@ class Processor(QObject):
     
     def sublw(self, k):
         self.W = W_Register(k - self.W.value)
-        self.carry_flag(self.W)
+        self.carry_flag_sub(self.W)
         self.digit_carry_flag(self.W)
         self.zero_flag(self.W)
         self.mem.inc_pc()
@@ -241,7 +241,7 @@ class Processor(QObject):
     def subwf(self, f, d = 0):
         if d == 0:
             self.W = W_Register(-(self.W -self.mem[f]))
-            self.carry_flag(self.W)
+            self.carry_flag_sub(self.W)
             self.digit_carry_flag(self.W)
             self.zero_flag(self.W)
         else:
@@ -277,6 +277,15 @@ class Processor(QObject):
         if reg.value > 0xFF:
             reg.set(reg % 0xFF)
             self.mem[STATUS].set_bit(C, 1)
+        else:
+            self.mem[STATUS].set_bit(C, 0)
+    
+    def carry_flag_sub(self, reg):
+        if reg.value < 0xFF:
+            reg.set(reg % 0xFF)
+            self.mem[STATUS].set_bit(C, 1)
+        else:
+            self.mem[STATUS].set_bit(C, 0)
     
     def carry_flag_rotate(self, reg, bit):
         self.mem[STATUS].set_bit(C, reg.test_bit(bit))
