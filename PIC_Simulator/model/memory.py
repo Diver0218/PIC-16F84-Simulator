@@ -26,7 +26,7 @@ class Memory():
 
     stackpointer : int = 0
 
-    stack : list[int] = [int(0)] * 8
+    stack : list[int] = [int(0) for _ in range(8)] 
 
     pc : int = 0
     

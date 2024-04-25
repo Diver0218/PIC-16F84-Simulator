@@ -112,12 +112,16 @@ class MainWindow(QMainWindow):
         self.lay_main = QHBoxLayout()
         
         #regs
-        self.widg_reg = QWidget(parent=self.widg_main)
+        self.widg_reg = QWidget(self.widg_main)
         self.lay_reg = QVBoxLayout(self.widg_reg)
         self.tbl_porta = MemTable(3, 8, self)
         self.tbl_portb = MemTable(3, 8, self)
         self.tbl_mem = MemTable(80, 9, self)
-        self.lbl_sfr = QLabel("SFR")
+        self.widg_sfr = QWidget(self.widg_reg)
+        self.lay_sfr = QHBoxLayout(self.widg_sfr)
+        self.lbl_W = QLabel(self.widg_sfr)
+        self.lbl_Stack = QLabel(self.widg_sfr)
+        self.lbl_SP = QLabel(self.widg_sfr)
         
         self.tbl_porta.setHorizontalHeaderLabels(['RA 7','RA 6','RA 5','RA 4','RA 3','RA 2','RA 1','RA 0'])
         self.tbl_porta.setVerticalHeaderLabels(['TRIS','i/o','RA'])
@@ -129,14 +133,20 @@ class MainWindow(QMainWindow):
         self.tbl_mem.resizeColumnsToContents()
         self.tbl_mem.resizeRowsToContents()
         self.tbl_mem.setFixedWidth(353)
+
+        self.lay_sfr.addWidget(self.lbl_W)
+        self.lay_sfr.addWidget(self.lbl_SP)
+        self.lay_sfr.addWidget(self.lbl_Stack)
+        self.lbl_Stack.setFrameRect(QRect(0, 0, self.lbl_Stack.width(), self.lbl_Stack.height()))
         
         self.lay_reg.addWidget(self.tbl_porta)
         self.lay_reg.addWidget(self.tbl_portb)
         self.lay_reg.addWidget(self.tbl_mem)
+        self.lay_reg.addWidget(self.widg_sfr)
         
         
         #Code
-        self.widg_code = QWidget(parent=self.widg_main)
+        self.widg_code = QWidget(self.widg_main)
         self.lay_code = QVBoxLayout(self.widg_code)
         self.list_code = QListWidget()
         # self.lbl_code = QLabel("lskdugaldkgjsdlgkjbasdjgkbsdjgdfgdGSDGsdds\nwefwefewfwefwefwefWEFWefWEGWegewG\n hfgduzsgkeriugziebsztieruztvgerzuvteuzteriuvziguzrgiuzrgkazgrzaergkzeragkreuz")
@@ -144,13 +154,13 @@ class MainWindow(QMainWindow):
         self.lay_code.addWidget(self.list_code)
         
         #Run Control
-        self.widg_runctrl = QWidget(parent=self.widg_main)
+        self.widg_runctrl = QWidget(self.widg_main)
         self.lay_runctrl = QVBoxLayout(self.widg_runctrl)
         
-        self.widg_brk = QWidget(parent=self.widg_runctrl)
+        self.widg_brk = QWidget(self.widg_runctrl)
         self.lay_brk = QHBoxLayout(self.widg_brk)
         
-        self.widg_freq = QWidget(parent=self.widg_runctrl)
+        self.widg_freq = QWidget(self.widg_runctrl)
         self.lay_freq = QHBoxLayout(self.widg_freq)
         
         self.btn_step = QPushButton('Step')
@@ -220,6 +230,12 @@ class MainWindow(QMainWindow):
         self.tbl_mem.setData(mem)
         self.tbl_porta.setPortData(mem, 5)
         self.tbl_portb.setPortData(mem, 6)
+        self.set_fsr()
+    
+    def set_fsr(self):
+        self.lbl_W.setText(f"W-Reg.: {self.p.W.value:02x}")
+        self.lbl_Stack.setText(f"Stack: {self.p.mem.stack}")
+        self.lbl_SP.setText(f"SP: {self.p.mem.stackpointer}")
 
     @pyqtSlot()
     def btn_step_method(self):
