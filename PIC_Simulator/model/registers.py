@@ -106,7 +106,7 @@ class Register():
         return self
     
     def __invert__(self):
-        return Register(~self.value)
+        return Register((~self.value) & 0xFF)
     
     def __neg__(self):
         return Register(-self.value)
