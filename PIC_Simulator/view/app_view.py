@@ -300,7 +300,7 @@ class MainWindow(QMainWindow):
         print(pc)
         for i, line in enumerate(self.code_lbls):
             if line['pc'] == pc:
-                item = self.list_code.item(i)
+                item = self.list_code.item(i-1)
                 item.setSelected(True)
                 self.list_code.scrollToItem(item)
             else:
