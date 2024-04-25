@@ -22,15 +22,12 @@ class Memory():
     # EECON1 : Register
     # EECON2 : Register
 
-    eeprom = [[Register(0) for _ in range(80)] for _ in range(2)]
-
-    stackpointer : int = 0
-
-    stack : list[int] = [int(0)] * 8
-
-    pc : int = 0
-    
-    bank_relevant_adr = [0x01, 0x05, 0x06, 0x08, 0x09]
+    def __init__(self):
+        self.eeprom = [[Register(0) for _ in range(80)] for _ in range(2)]
+        self.stackpointer : int = 0
+        self.stack : list[int] = [int(0)] * 8
+        self.pc : int = 0   
+        self.bank_relevant_adr = [0x01, 0x05, 0x06, 0x08, 0x09]
 
     def __str__(self):
         retValue = ""

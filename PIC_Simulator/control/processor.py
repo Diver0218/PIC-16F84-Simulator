@@ -27,20 +27,22 @@ class Processor(QObject):
     def __init__(self, inst) -> None:
         super().__init__()
         self.inst = inst
+        self.mem.__init__()
         self.mem.pc = 0
         self.update_pc()
         self.update_mem()
         
         
-    def set_instructions(self, inst):
-        self.inst = inst
-        self.mem.inc_pc()
-        self.update_inst(inst)
+    # def set_instructions(self, inst):
+    #     self.inst = inst
+    #     self.mem.inc_pc()
+    #     self.update_inst(inst)
             
 #region Instructions
     def addlw(self, k):
         self.W += k
         self.carry_flag(self.W)
+        self.digit_carry_flag(self.W)
         self.zero_flag(self.W)
         self.mem.inc_pc()
 
@@ -53,10 +55,12 @@ class Processor(QObject):
         if d == 0:
             self.W += self.mem[f]
             self.carry_flag(self.W)
+            self.digit_carry_flag(self.W)
             self.zero_flag(self.W)
         else:
             self.mem[f] += self.W
             self.carry_flag(self.mem[f])
+            self.digit_carry_flag(self.mem[f])
             self.zero_flag(self.mem[f])
         self.mem.inc_pc()
 
@@ -70,35 +74,21 @@ class Processor(QObject):
         self.mem.inc_pc()
 
     def bcf(self, f, b):
-        if f == 'W':
-            self.W.set_bit(b, 0)
-        else:
-            self.mem[f].set_bit(b, 0)
+        self.mem[f].set_bit(b, 0)
         self.mem.inc_pc()
 
     def btfsc(self, f, b):
-        if f == 'W':
-            if not self.W.test_bit(b):
-                self.mem.inc_pc()
-        else:
-            if not self.mem[f].test_bit(b):
-               self.mem.inc_pc()
+        if not self.mem[f].test_bit(b):
+            self.mem.inc_pc()
         self.mem.inc_pc()
 
     def bsf(self, f, b):
-        if f == 'W':
-            self.W.set_bit(b, 1)
-        else:
-            self.mem[f].set_bit(b, 1)
+        self.mem[f].set_bit(b, 1)
         self.mem.inc_pc()
 
     def btfss(self, f, b):
-        if f == 'W':
-            if self.W.test_bit(b):
-                self.mem.inc_pc()
-        else:
-            if self.mem[f].test_bit(b):
-               self.mem.inc_pc()
+        if self.mem[f].test_bit(b):
+            self.mem.inc_pc()
         self.mem.inc_pc()
 
     def call(self, k):
@@ -242,8 +232,9 @@ class Processor(QObject):
         return
     
     def sublw(self, k):
-        self.W -= k
+        self.W = W_Register(k - self.W.value)
         self.carry_flag(self.W)
+        self.digit_carry_flag(self.W)
         self.zero_flag(self.W)
         self.mem.inc_pc()
 
@@ -251,15 +242,20 @@ class Processor(QObject):
         if d == 0:
             self.W = W_Register(-(self.W -self.mem[f]))
             self.carry_flag(self.W)
+            self.digit_carry_flag(self.W)
             self.zero_flag(self.W)
         else:
             self.mem[f] -= self.W
             self.carry_flag(self.mem[f])
+            self.digit_carry_flag(self.mem[f])
             self.zero_flag(self.mem[f])
         self.mem.inc_pc()
 
     def swapf(self, f, d = 0):
         # Swap Nibbles in f
+        self.carry_flag(self.mem[f])
+        self.digit_carry_flag(self.mem[f])
+        self.zero_flag(self.mem[f])
         return
     
     def xorlw(self, k):
@@ -287,7 +283,15 @@ class Processor(QObject):
 
     def zero_flag(self, reg):
         if reg.value == 0:
-            reg.set_bit(Z, 1)
+            self.mem[STATUS].set_bit(Z, 1)
+        else:
+            self.mem[STATUS].set_bit(Z, 0)
+            
+    def digit_carry_flag(self, reg):
+        # if reg.value > 0x0F:
+        #     reg.set(reg % 0x0F)
+        #     self.mem[STATUS].set_bit(DC, 1)
+        pass
             
     def update_mem(self):
         self.sig_mem.emit(self.mem)
@@ -369,7 +373,6 @@ class Processor(QObject):
             case 'iorwf':
                 self.iorwf(inst['file'], inst['destination'])
             case 'movlw':
-                print ("in Case movlw")
                 self.movlw(inst['literal'])
             case 'movf':
                 self.movf(inst['file'], inst['destination'])
@@ -401,3 +404,4 @@ class Processor(QObject):
                 self.xorwf(inst['file'], inst['destination'])
             case _:
                 pass
+            
