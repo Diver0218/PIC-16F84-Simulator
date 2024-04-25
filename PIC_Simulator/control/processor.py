@@ -313,8 +313,15 @@ class Processor(QObject):
         #debug
         #print("Processor: Funktion aufgerufen: step")
         print(self.W)
-        print(self.mem)
         #enddebug
+        
+    @pyqtSlot(bool)
+    def init_view(self):
+        self.update_mem()
+        self.update_W()
+        self.update_quartz()
+        self.update_inst(self.inst)
+        self.update_pc()
            
     def execute_instruction(self):
         inst = self.inst[self.mem.pc]

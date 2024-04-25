@@ -14,6 +14,8 @@ class Listing():
 
     def readFile(self, file): #= os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "ExamplesListings", "TPicSim1.LST")):
         pc_index = 0
+        if not os.path.exists(file):
+            return
         with open(file, 'r') as file:
             for line in file:
                 self.parseLine(line)

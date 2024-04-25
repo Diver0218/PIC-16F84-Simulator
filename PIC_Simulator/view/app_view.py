@@ -75,10 +75,12 @@ class TblPortButton(QPushButton):
 class MainWindow(QMainWindow):
     
     sig_steprequest = pyqtSignal(bool)
+    sig_init = pyqtSignal(bool)
     code_lbls = []
 
     def __init__(self):
         super().__init__()
+        self.lst = Listing("")
 
     def create_window(self): 
 ##########################
@@ -190,6 +192,7 @@ class MainWindow(QMainWindow):
         self.create_window()
         self.show()
         self.tbl_mem.show()
+        self.setMemData(Memory())
 
     @pyqtSlot(Memory)
     def setMemData(self, mem):
@@ -202,9 +205,6 @@ class MainWindow(QMainWindow):
 
     @pyqtSlot()
     def btn_step_method(self):
-        #debug
-        print("Funktion aufgerufen: btn_step_method")
-        #enddebug
         self.sig_steprequest.emit(True)
     
     @pyqtSlot()
@@ -228,6 +228,7 @@ class MainWindow(QMainWindow):
         self.p.sig_mem.connect(self.setMemData)
         self.sig_steprequest.connect(self.p.step)
         self.p.sig_pc.connect(self.highlight_instruction)
+        self.sig_init.connect(self.p.init_view)
         self.p_thread = QThread()
         self.p.moveToThread(self.p_thread)
         self.p_thread.start()
