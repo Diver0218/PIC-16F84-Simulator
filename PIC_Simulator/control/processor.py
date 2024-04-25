@@ -148,6 +148,7 @@ class Processor(QObject):
         else:
             self.mem[f] = self.mem[f].increment()
             self.zero_flag(self.mem[f])
+        self.mem.inc_pc()
 
     def incfsz(self, f, d = 0):
         if d == 0:
@@ -240,12 +241,12 @@ class Processor(QObject):
 
     def subwf(self, f, d = 0):
         if d == 0:
-            self.W = W_Register(-(self.W -self.mem[f]))
+            self.W = W_Register((self.mem[f] - self.W))
             self.carry_flag_sub(self.W)
             self.digit_carry_flag_sub(self.W, self.mem[f])
             self.zero_flag(self.W)
         else:
-            self.mem[f] -= self.W
+            self.mem[f] -= Register(self.W)
             self.carry_flag(self.mem[f])
             self.digit_carry_flag_sub(self.mem[f], self.W)
             self.zero_flag(self.mem[f])

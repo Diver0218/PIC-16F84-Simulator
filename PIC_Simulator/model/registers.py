@@ -14,10 +14,16 @@ class Register():
             raise TypeError("Unsupported Type for 'set' method")
     
     def increment(self):
-        return Register(self.value - 1)
+        retval = self.value + 1
+        if retval > 0xFF:
+            retval = 0xFF
+        return Register(retval)
 
     def decrement(self):
-        return Register(self.value + 1)
+        retval = self.value - 1
+        if retval < 0:
+            retval = 0xFF
+        return Register(retval)
     
     def __str__(self):
         return f"Registerwert: {self.value:02X}"
@@ -131,6 +137,17 @@ class Register():
             raise TypeError("Unsupported operand type(s) for +=: 'Register' and '{}'".format(type(other)))
         return self
     
+    def __sub__(self, other):
+        if isinstance(other, Register):
+            retValue = self.value - other.value
+            # overload flag
+        elif isinstance(other, int):
+            retValue = self.value - other
+            # overload flag
+        else:
+            raise TypeError("Unsupported operand type(s) for +: 'Register' and '{}'".format(type(other)))
+        return W_Register(retValue)
+    
 class W_Register(Register):
 
     def __init__(self, value):
@@ -146,17 +163,6 @@ class W_Register(Register):
             # overload flag
         elif isinstance(other, int):
             retValue = self.value + other
-            # overload flag
-        else:
-            raise TypeError("Unsupported operand type(s) for +: 'Register' and '{}'".format(type(other)))
-        return W_Register(retValue)
-    
-    def __sub__(self, other):
-        if isinstance(other, Register):
-            retValue = self.value - other.value
-            # overload flag
-        elif isinstance(other, int):
-            retValue = self.value - other
             # overload flag
         else:
             raise TypeError("Unsupported operand type(s) for +: 'Register' and '{}'".format(type(other)))
