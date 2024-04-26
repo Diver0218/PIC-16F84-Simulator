@@ -26,7 +26,7 @@ class Register():
         return Register(retval)
     
     def __str__(self):
-        return f"Registerwert: {self.value:02X}"
+        return f"{self.value:02X}"
 
     def __and__(self, other):
         if isinstance(other, Register):  

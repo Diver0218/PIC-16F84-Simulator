@@ -118,8 +118,9 @@ class MainWindow(QMainWindow):
         self.tbl_mem = MemTable(80, 9, self)
         
         self.widg_sfr = QWidget(self.widg_reg)
+        self.widg_sfr.setStyleSheet("QWidget { border: 1px solid black; }")
         self.lay_sfr = QHBoxLayout(self.widg_sfr)
-        self.lbl_Stack = QLabel(self.widg_sfr)
+        self.lbl_stack = QLabel(self.widg_sfr)
         
         self.widg_sfr_ou = QWidget(self.widg_sfr)
         self.lay_sfr_ou = QVBoxLayout(self.widg_sfr_ou)
@@ -130,14 +131,20 @@ class MainWindow(QMainWindow):
         self.widg_sfr_vis = QWidget(self.widg_sfr_vis_hid)
         self.lay_sfr_vis = QVBoxLayout(self.widg_sfr_vis)
         self.lbl_W = QLabel(self.widg_sfr_vis)
+        self.lbl_fsr = QLabel(self.widg_sfr_vis)
+        self.lbl_pcl = QLabel(self.widg_sfr_vis)
+        self.lbl_pclath = QLabel(self.widg_sfr_vis)
         
         self.widg_sfr_hid = QWidget(self.widg_sfr_vis_hid)
         self.lay_sfr_hid = QVBoxLayout(self.widg_sfr_hid)
-        self.lbl_SP = QLabel(self.widg_sfr_hid)
+        self.lbl_pc = QLabel(self.widg_sfr_hid)
+        self.lbl_sp = QLabel(self.widg_sfr_hid)
         
         self.widg_sfr_etc = QWidget(self.widg_sfr_ou)
         self.lay_sfr_etc = QVBoxLayout(self.widg_sfr_etc)
         self.lbl_status = QLabel(self.widg_sfr_etc)
+        self.lbl_option = QLabel(self.widg_sfr_etc)
+        self.lbl_intcon = QLabel(self.widg_sfr_etc)
         
         self.tbl_porta.setHorizontalHeaderLabels(['RA 7','RA 6','RA 5','RA 4','RA 3','RA 2','RA 1','RA 0'])
         self.tbl_porta.setVerticalHeaderLabels(['TRIS','i/o','RA'])
@@ -148,18 +155,31 @@ class MainWindow(QMainWindow):
         self.tbl_mem.setHorizontalHeaderLabels(['Bit 7', 'Bit 6', 'Bit 5', 'Bit 4', 'Bit 3', 'Bit 2', 'Bit 1', 'Bit 0', 'Value'])
         self.tbl_mem.resizeColumnsToContents()
         self.tbl_mem.resizeRowsToContents()
-        self.tbl_mem.setFixedWidth(353)
+        self.tbl_mem.setFixedWidth(354)
 
-        self.lay_sfr_vis.addWidget(self.W)
+        self.lay_sfr_vis.addWidget(self.lbl_W)
+        self.lay_sfr_vis.addWidget(self.lbl_fsr)
+        self.lay_sfr_vis.addWidget(self.lbl_pcl)
+        self.lay_sfr_vis.addWidget(self.lbl_pclath)
 
-        self.lay_sfr_vis_hid.addWidget(self.lay_sfr_vis)
-        self.lay_sfr_vis_hid.addWidget(self.lay_sfr_hid)
+        self.lay_sfr_hid.addWidget(self.lbl_pc)
+        self.lay_sfr_hid.addWidget(self.lbl_sp)
+
+        self.lay_sfr_vis_hid.addWidget(self.widg_sfr_vis)
+        self.lay_sfr_vis_hid.addWidget(self.widg_sfr_hid)
+
+        self.lay_sfr_etc.addWidget(self.lbl_status)
+        self.lay_sfr_etc.addWidget(self.lbl_status)
+        self.lay_sfr_etc.addWidget(self.lbl_status)
+        self.lay_sfr_etc.addWidget(self.lbl_option)
+        self.lay_sfr_etc.addWidget(self.lbl_intcon)
 
         self.lay_sfr_ou.addWidget(self.widg_sfr_vis_hid)
         self.lay_sfr_ou.addWidget(self.widg_sfr_etc)
 
         self.lay_sfr.addWidget(self.widg_sfr_ou)
-        self.lay_sfr.addWidget(self.lbl_Stack)
+        self.lay_sfr.addWidget(self.lbl_stack)
+        self.widg_sfr.setFixedWidth(354)
         
         self.lay_reg.addWidget(self.tbl_porta)
         self.lay_reg.addWidget(self.tbl_portb)
@@ -257,12 +277,23 @@ class MainWindow(QMainWindow):
         self.set_fsr(proc_data[0], proc_data[1])
     
     def set_fsr(self, mem:Memory, W):
-        self.lbl_W.setText(f"W-Reg.: " + f"{W.value:02x}".upper())
+        #vis
+        self.lbl_W.setText(f"W-Reg.:            " + f"{W.value:02x}".upper())
+        self.lbl_fsr.setText(f"FSR:                  " + f"{mem[4].value:02x}".upper())
+        self.lbl_pcl.setText(f"PCL:                  " + f"{mem[2].value:02x}".upper())
+        self.lbl_pclath.setText(f"PCLATH:           " + f"{mem[10].value:02x}".upper())
+        #hid
+        self.lbl_pc.setText(f"PC:                 {mem.pc:04x}")
+        self.lbl_sp.setText(f"SP:                       {mem.stackpointer}")
+        #etc
+        self.lbl_status.setText(f"Status: {mem[3].value:02x}    \nIRP:  RP1:    RP0:    TO:     PD:     Z:      DC:     C:\n{mem[3].test_bit(7)}      {mem[3].test_bit(6)}         {mem[3].test_bit(5)}         {mem[3].test_bit(4)}        {mem[3].test_bit(3)}         {mem[3].test_bit(2)}       {mem[3].test_bit(1)}         {mem[3].test_bit(0)}")
+        self.lbl_option.setText(f"Option: {mem[0x81].value:02x}\nRBP:  IntEdg: T0CS: T0SE:  PSA:  PS2:  PS1:  PS0:\n{mem[0x81].test_bit(7)}       {mem[0x81].test_bit(6)}           {mem[0x81].test_bit(5)}       {mem[0x81].test_bit(4)}         {mem[0x81].test_bit(3)}       {mem[0x81].test_bit(2)}       {mem[0x81].test_bit(1)}       {mem[0x81].test_bit(0)}")
+        self.lbl_intcon.setText(f"INTCON: {mem[0x0B].value:02x}\nGIE:  EEIE:  T0IE:  INTE:  RBIE:  T0IF:  INTF:  RBIF:\n{mem[0x0B].test_bit(7)}      {mem[0x0B].test_bit(6)}        {mem[0x0B].test_bit(5)}       {mem[0x0B].test_bit(4)}         {mem[0x0B].test_bit(3)}        {mem[0x0B].test_bit(2)}       {mem[0x0B].test_bit(1)}        {mem[0x0B].test_bit(0)}")
+        #stack
         stack_str = ""
         for stack_part in mem.stack:
             stack_str += f"{stack_part:04x}\n".upper()
-        self.lbl_Stack.setText(f"Stack: \n{stack_str}")
-        self.lbl_SP.setText(f"SP: {mem.stackpointer}")
+        self.lbl_stack.setText(f"Stack: \n{stack_str}")
 
     @pyqtSlot()
     def btn_step_method(self):
