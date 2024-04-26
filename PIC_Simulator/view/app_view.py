@@ -304,7 +304,6 @@ class MainWindow(QMainWindow):
             
     @pyqtSlot(int)
     def highlight_instruction(self, pc):
-        print(pc)
         for i, line in enumerate(self.code_lbls):
             if line['pc'] == pc:
                 item = self.list_code.item(i)

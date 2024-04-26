@@ -70,6 +70,7 @@ class Memory():
                     
     def inc_pc(self, amount : int = 1):
         self.pc += amount
+        print(f"PC: {self.pc}")
 
     def set_pc(self, pc):
         self.pc = pc
