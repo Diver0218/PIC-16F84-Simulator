@@ -277,6 +277,7 @@ class Processor(QObject):
             reg.set(reg % 0xFF)
             self.mem[STATUS].set_bit(C, 1)
         else:
+            reg.set(reg % 0xFF)
             self.mem[STATUS].set_bit(C, 0)
     
     def carry_flag_sub(self, reg):
@@ -284,6 +285,7 @@ class Processor(QObject):
             reg.set(reg & 0xFF)
             self.mem[STATUS].set_bit(C, 1)
         else:
+            reg.set(reg & 0xFF)
             self.mem[STATUS].set_bit(C, 0)
     
     def carry_flag_rotate(self, reg, bit):

@@ -120,10 +120,8 @@ class Register():
     def __mod__(self, other):
         if isinstance(other, Register):
             retValue = self.value % other.value
-            # overload flag
         elif isinstance(other, int):
             retValue = self.value % other
-            # overload flag
         else:
             raise TypeError("Unsupported operand type(s) for +: 'Register' and '{}'".format(type(other)))
         return Register(retValue)
@@ -140,10 +138,8 @@ class Register():
     def __sub__(self, other):
         if isinstance(other, Register):
             retValue = self.value - other.value
-            # overload flag
         elif isinstance(other, int):
             retValue = self.value - other
-            # overload flag
         else:
             raise TypeError("Unsupported operand type(s) for +: 'Register' and '{}'".format(type(other)))
         return W_Register(retValue)

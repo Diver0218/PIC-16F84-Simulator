@@ -76,17 +76,20 @@ class Memory():
 
     def push_pc(self):
         if self.stackpointer >= 7:
+            self.stack[self.stackpointer] = self.pc + 1
             self.stackpointer = 0
         else:
+            self.stack[self.stackpointer] = self.pc + 1
             self.stackpointer += 1
-        self.stack[self.stackpointer] = self.pc + 1
+        
 
 
     def pop_pc(self):
-        retAdr = self.stack[self.stackpointer]
         if self.stackpointer <= 0:
             self.stackpointer = 7
+            retAdr = self.stack[self.stackpointer]
         else:
             self.stackpointer -= 1
+            retAdr = self.stack[self.stackpointer]
         return retAdr
     
