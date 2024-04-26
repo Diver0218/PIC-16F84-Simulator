@@ -19,8 +19,7 @@ class Processor(QObject):
     quartz = int()
     inst = list()
     
-    sig_mem = pyqtSignal(Memory)
-    sig_W = pyqtSignal(W_Register)
+    sig_mem = pyqtSignal(tuple)
     sig_quartz = pyqtSignal(int)
     sig_inst = pyqtSignal(list)
     sig_pc = pyqtSignal(int)
@@ -320,10 +319,7 @@ class Processor(QObject):
             self.mem[STATUS].set_bit(DC, 0)
             
     def update_mem(self):
-        self.sig_mem.emit(self.mem)
-        
-    def update_W(self):
-        self.sig_W.emit(self.W)
+        self.sig_mem.emit((self.mem, self.W))
         
     def update_quartz(self):
         self.sig_quartz.emit(self.quartz)

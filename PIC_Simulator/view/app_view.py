@@ -224,20 +224,20 @@ class MainWindow(QMainWindow):
         self.tbl_mem.show()
         self.init_new_processor()
 
-    @pyqtSlot(Memory)
-    def setMemData(self, mem):
+    @pyqtSlot(tuple)
+    def setMemData(self, proc_data):
         #debug:
         #print("Funktion aufgerufen: setMemData")
         #enddebug
-        self.tbl_mem.setData(mem)
-        self.tbl_porta.setPortData(mem, 5)
-        self.tbl_portb.setPortData(mem, 6)
-        self.set_fsr()
+        self.tbl_mem.setData(proc_data[0])
+        self.tbl_porta.setPortData(proc_data[0], 5)
+        self.tbl_portb.setPortData(proc_data[0], 6)
+        self.set_fsr(proc_data[0], proc_data[1])
     
-    def set_fsr(self):
-        self.lbl_W.setText(f"W-Reg.: {self.p.W.value:02x}")
-        self.lbl_Stack.setText(f"Stack: {self.p.mem.stack}")
-        self.lbl_SP.setText(f"SP: {self.p.mem.stackpointer}")
+    def set_fsr(self, mem, W):
+        self.lbl_W.setText(f"W-Reg.: {W.value:02x}")
+        self.lbl_Stack.setText(f"Stack: {mem.stack}")
+        self.lbl_SP.setText(f"SP: {mem.stackpointer}")
 
     @pyqtSlot()
     def btn_step_method(self):
