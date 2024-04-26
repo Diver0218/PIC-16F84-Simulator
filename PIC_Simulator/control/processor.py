@@ -344,7 +344,6 @@ class Processor(QObject):
     @pyqtSlot(bool)
     def init_view(self):
         self.update_mem()
-        self.update_W()
         self.update_quartz()
         self.update_inst(self.inst)
         self.update_pc()
