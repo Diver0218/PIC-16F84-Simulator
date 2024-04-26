@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QWidget, QListWidget, QListWidgetItem, QLabel, QVBoxLayout, QHBoxLayout, QPushButton, QTableWidget, QTableWidgetItem, QMenuBar, QMenu, QMainWindow, QLayout, QFileDialog
+from PyQt6.QtWidgets import QWidget, QListWidget, QListWidgetItem, QLabel, QVBoxLayout, QHBoxLayout, QPushButton, QTableWidget, QTableWidgetItem, QMenuBar, QMenu, QMainWindow, QLayout, QFileDialog, QHeaderView
 from PyQt6.QtWidgets import QLineEdit
 from PyQt6.QtCore import QRect
 import sys
@@ -56,10 +56,8 @@ class MemTable(QTableWidget):
                 self.setItem(1, i, QTableWidgetItem('o'))
 
     def resizePorts(self):
-        for i in range(7):
-            self.rowResized(i, 5, 5)
-            self.columnResized(i, 5, 5)
-        self.setFixedSize(292, 98)
+        self.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        self.setFixedSize(354, 98)
     
     @pyqtSlot(list)
     def signal_update_bit(self, update):
