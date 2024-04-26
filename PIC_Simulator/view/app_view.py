@@ -150,10 +150,16 @@ class MainWindow(QMainWindow):
         self.tbl_mem.resizeRowsToContents()
         self.tbl_mem.setFixedWidth(353)
 
-        self.lay_sfr.addWidget(self.lbl_W)
-        self.lay_sfr.addWidget(self.lbl_SP)
+        self.lay_sfr_vis.addWidget(self.W)
+
+        self.lay_sfr_vis_hid.addWidget(self.lay_sfr_vis)
+        self.lay_sfr_vis_hid.addWidget(self.lay_sfr_hid)
+
+        self.lay_sfr_ou.addWidget(self.widg_sfr_vis_hid)
+        self.lay_sfr_ou.addWidget(self.widg_sfr_etc)
+
+        self.lay_sfr.addWidget(self.widg_sfr_ou)
         self.lay_sfr.addWidget(self.lbl_Stack)
-        self.lbl_Stack.setFrameRect(QRect(0, 0, self.lbl_Stack.width(), self.lbl_Stack.height()))
         
         self.lay_reg.addWidget(self.tbl_porta)
         self.lay_reg.addWidget(self.tbl_portb)
