@@ -234,9 +234,12 @@ class MainWindow(QMainWindow):
         self.tbl_portb.setPortData(proc_data[0], 6)
         self.set_fsr(proc_data[0], proc_data[1])
     
-    def set_fsr(self, mem, W):
+    def set_fsr(self, mem:Memory, W):
         self.lbl_W.setText(f"W-Reg.: {W.value:02x}")
-        self.lbl_Stack.setText(f"Stack: {mem.stack}")
+        stack_str = ""
+        for stack_part in mem.stack:
+            stack_str += f"{stack_part:04x}\n"
+        self.lbl_Stack.setText(f"Stack: \n{stack_str}")
         self.lbl_SP.setText(f"SP: {mem.stackpointer}")
 
     @pyqtSlot()
