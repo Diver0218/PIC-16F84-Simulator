@@ -210,10 +210,11 @@ class Processor(QObject):
         carry_tmp = self.mem[STATUS].test_bit(C)
         self.carry_flag_rotate(self.mem[f], 7)
         if d == 0:
-            self.W = W_Register(self.mem[f] << 1)
+            self.W = W_Register((self.mem[f] << 1) & 0xFF)
             self.W.set_bit(0, carry_tmp)
         else:
             self.mem[f] <<= 1
+            self.mem[f] &= 0xFF
             self.mem[f].set_bit(0, carry_tmp)
         self.mem.inc_pc()
 
@@ -221,11 +222,12 @@ class Processor(QObject):
         carry_tmp = self.mem[STATUS].test_bit(C)
         self.carry_flag_rotate(self.mem[f], 0)
         if d == 0:
-            self.W = W_Register(self.mem[f] >> 1)
+            self.W = W_Register((self.mem[f] >> 1) & 0xFF)
             self.W.set_bit(7, carry_tmp)
         else:
             self.mem[f] >>= 1
-            self.W.set_bit(7, carry_tmp)
+            self.mem[f] &= 0xFF
+            self.mem[f].set_bit(7, carry_tmp)
         self.mem.inc_pc()
 
     def sleep(self):
