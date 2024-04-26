@@ -120,12 +120,15 @@ class Processor(QObject):
         self.mem.inc_pc()
 
     def decfsz(self, f, d = 0):
-        if d == 0:
+        if d == 1:
             self.mem[f] = self.mem[f].decrement()
+            if self.mem[f] & 0xFF == 0:
+                self.mem.inc_pc()
         else:
             self.W = W_Register(self.mem[f].decrement())
-        if self.mem[f] == 0:
-            self.nop()
+            if self.W & 0xFF == 0:
+                print("is zero")
+                self.mem.inc_pc()
         self.mem.inc_pc()
 
     def decf(self, f, d = 0):
@@ -151,12 +154,14 @@ class Processor(QObject):
         self.mem.inc_pc()
 
     def incfsz(self, f, d = 0):
-        if d == 0:
+        if d == 1:
             self.mem[f] = self.mem[f].increment()
+            if self.mem[f] & 0xFF == 0:
+                self.mem.inc_pc()
         else:
             self.W = W_Register(self.mem[f].increment())
-        if self.mem[f] == 0:
-            self.nop()
+            if self.W & 0xFF == 0:
+                self.mem.inc_pc()
         self.mem.inc_pc()
 
     def iorlw(self, k):
@@ -342,7 +347,6 @@ class Processor(QObject):
         self.update_pc()
         #debug
         #print("Processor: Funktion aufgerufen: step")
-        print(self.W)
         #enddebug
         
     @pyqtSlot(bool)

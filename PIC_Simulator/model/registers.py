@@ -144,6 +144,14 @@ class Register():
             raise TypeError("Unsupported operand type(s) for +: 'Register' and '{}'".format(type(other)))
         return W_Register(retValue)
     
+    def __eq__(self, other):
+        if isinstance(other, Register):
+            return self.value == other.value
+        if isinstance(other, int):
+            return self.value == other
+        else:
+            raise TypeError("Unsupported operand type(s) for ==: 'Register' and '{}'".format(type(other)))
+    
 class W_Register(Register):
 
     def __init__(self, value):
