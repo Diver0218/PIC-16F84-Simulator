@@ -31,18 +31,17 @@ class MemTable(QTableWidget):
             for j in range(columns):
                 if j == 8:
                     item = mem.get_bank_specific_register(i, 0).value
-                    newitem = QTableWidgetItem(str(item))
+                    newitem = QTableWidgetItem(f"{item:02x}".upper())
                     self.setItem(i , j, newitem)
                 else:
-                    item = mem.get_bank_specific_register(i, 0).test_bit(j)
+                    item = mem.get_bank_specific_register(i, 0).test_bit(7-j)
                     newitem = QTableWidgetItem(str(item))
                     self.setItem(i , j, newitem)
-            verticaHeaders.append(str(hex(i))[2:])
+            verticaHeaders.append(str(hex(i)).upper()[2:])
         self.setVerticalHeaderLabels(verticaHeaders)
 
     
     def setPortData(self, mem, adr):
-        rows = self.rowCount()
         columns = self.columnCount()
         for i in range(columns):
             tbl_button = TblPortButton(adr, 7-i, self)
@@ -129,7 +128,7 @@ class MainWindow(QMainWindow):
         self.tbl_portb.setHorizontalHeaderLabels(['RB 7','RB 6','RB 5','RB 4','RB 3','RB 2','RB 1','RB 0'])
         self.tbl_portb.setVerticalHeaderLabels(['TRIS','i/o','RB'])
         self.tbl_portb.resizePorts()
-        self.tbl_mem.setHorizontalHeaderLabels(['Bit 0', 'Bit 1', 'Bit 2', 'Bit 3', 'Bit 4', 'Bit 5', 'Bit 6', 'Bit 7', 'Value'])
+        self.tbl_mem.setHorizontalHeaderLabels(['Bit 7', 'Bit 6', 'Bit 5', 'Bit 4', 'Bit 3', 'Bit 2', 'Bit 1', 'Bit 0', 'Value'])
         self.tbl_mem.resizeColumnsToContents()
         self.tbl_mem.resizeRowsToContents()
         self.tbl_mem.setFixedWidth(353)
@@ -235,10 +234,10 @@ class MainWindow(QMainWindow):
         self.set_fsr(proc_data[0], proc_data[1])
     
     def set_fsr(self, mem:Memory, W):
-        self.lbl_W.setText(f"W-Reg.: {W.value:02x}")
+        self.lbl_W.setText(f"W-Reg.: " + f"{W.value:02x}".upper())
         stack_str = ""
         for stack_part in mem.stack:
-            stack_str += f"{stack_part:04x}\n"
+            stack_str += f"{stack_part:04x}\n".upper()
         self.lbl_Stack.setText(f"Stack: \n{stack_str}")
         self.lbl_SP.setText(f"SP: {mem.stackpointer}")
 
