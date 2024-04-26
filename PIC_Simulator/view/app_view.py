@@ -31,18 +31,17 @@ class MemTable(QTableWidget):
             for j in range(columns):
                 if j == 8:
                     item = mem.get_bank_specific_register(i, 0).value
-                    newitem = QTableWidgetItem(str(item))
+                    newitem = QTableWidgetItem(f"{item:02x}".upper())
                     self.setItem(i , j, newitem)
                 else:
-                    item = mem.get_bank_specific_register(i, 0).test_bit(j)
+                    item = mem.get_bank_specific_register(i, 0).test_bit(7-j)
                     newitem = QTableWidgetItem(str(item))
                     self.setItem(i , j, newitem)
-            verticaHeaders.append(str(hex(i))[2:])
+            verticaHeaders.append(str(hex(i)).upper()[2:])
         self.setVerticalHeaderLabels(verticaHeaders)
 
     
     def setPortData(self, mem, adr):
-        rows = self.rowCount()
         columns = self.columnCount()
         for i in range(columns):
             tbl_button = TblPortButton(adr, 7-i, self)
@@ -117,11 +116,28 @@ class MainWindow(QMainWindow):
         self.tbl_porta = MemTable(3, 8, self)
         self.tbl_portb = MemTable(3, 8, self)
         self.tbl_mem = MemTable(80, 9, self)
+        
         self.widg_sfr = QWidget(self.widg_reg)
         self.lay_sfr = QHBoxLayout(self.widg_sfr)
-        self.lbl_W = QLabel(self.widg_sfr)
         self.lbl_Stack = QLabel(self.widg_sfr)
-        self.lbl_SP = QLabel(self.widg_sfr)
+        
+        self.widg_sfr_ou = QWidget(self.widg_sfr)
+        self.lay_sfr_ou = QVBoxLayout(self.widg_sfr_ou)
+        
+        self.widg_sfr_vis_hid = QWidget(self.widg_sfr_ou)
+        self.lay_sfr_vis_hid = QHBoxLayout(self.widg_sfr_vis_hid)
+        
+        self.widg_sfr_vis = QWidget(self.widg_sfr_vis_hid)
+        self.lay_sfr_vis = QVBoxLayout(self.widg_sfr_vis)
+        self.lbl_W = QLabel(self.widg_sfr_vis)
+        
+        self.widg_sfr_hid = QWidget(self.widg_sfr_vis_hid)
+        self.lay_sfr_hid = QVBoxLayout(self.widg_sfr_hid)
+        self.lbl_SP = QLabel(self.widg_sfr_hid)
+        
+        self.widg_sfr_etc = QWidget(self.widg_sfr_ou)
+        self.lay_sfr_etc = QVBoxLayout(self.widg_sfr_etc)
+        self.lbl_status = QLabel(self.widg_sfr_etc)
         
         self.tbl_porta.setHorizontalHeaderLabels(['RA 7','RA 6','RA 5','RA 4','RA 3','RA 2','RA 1','RA 0'])
         self.tbl_porta.setVerticalHeaderLabels(['TRIS','i/o','RA'])
@@ -129,7 +145,7 @@ class MainWindow(QMainWindow):
         self.tbl_portb.setHorizontalHeaderLabels(['RB 7','RB 6','RB 5','RB 4','RB 3','RB 2','RB 1','RB 0'])
         self.tbl_portb.setVerticalHeaderLabels(['TRIS','i/o','RB'])
         self.tbl_portb.resizePorts()
-        self.tbl_mem.setHorizontalHeaderLabels(['Bit 0', 'Bit 1', 'Bit 2', 'Bit 3', 'Bit 4', 'Bit 5', 'Bit 6', 'Bit 7', 'Value'])
+        self.tbl_mem.setHorizontalHeaderLabels(['Bit 7', 'Bit 6', 'Bit 5', 'Bit 4', 'Bit 3', 'Bit 2', 'Bit 1', 'Bit 0', 'Value'])
         self.tbl_mem.resizeColumnsToContents()
         self.tbl_mem.resizeRowsToContents()
         self.tbl_mem.setFixedWidth(353)
@@ -215,7 +231,7 @@ class MainWindow(QMainWindow):
 
         self.widg_main.setLayout(self.lay_main)
         self.widg_main.setWindowTitle('PIC-16F84-Simulator')
-        self.resize(1200, 600)
+        self.resize(1800, 1000)
         
 
     def init_window(self):
@@ -234,9 +250,12 @@ class MainWindow(QMainWindow):
         self.tbl_portb.setPortData(proc_data[0], 6)
         self.set_fsr(proc_data[0], proc_data[1])
     
-    def set_fsr(self, mem, W):
-        self.lbl_W.setText(f"W-Reg.: {W.value:02x}")
-        self.lbl_Stack.setText(f"Stack: {mem.stack}")
+    def set_fsr(self, mem:Memory, W):
+        self.lbl_W.setText(f"W-Reg.: " + f"{W.value:02x}".upper())
+        stack_str = ""
+        for stack_part in mem.stack:
+            stack_str += f"{stack_part:04x}\n".upper()
+        self.lbl_Stack.setText(f"Stack: \n{stack_str}")
         self.lbl_SP.setText(f"SP: {mem.stackpointer}")
 
     @pyqtSlot()
@@ -294,6 +313,11 @@ class MainWindow(QMainWindow):
             })
         for line in self.code_lbls:
             self.list_code.addItem(line['label'])
+        i = 0
+        while self.code_lbls[i]['pc'] != 0:
+            i += 1
+        self.list_code.item(i).setSelected(True)
+            
             
     @pyqtSlot(int)
     def highlight_instruction(self, pc):
