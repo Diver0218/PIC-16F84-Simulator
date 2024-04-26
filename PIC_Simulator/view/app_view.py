@@ -116,11 +116,28 @@ class MainWindow(QMainWindow):
         self.tbl_porta = MemTable(3, 8, self)
         self.tbl_portb = MemTable(3, 8, self)
         self.tbl_mem = MemTable(80, 9, self)
+        
         self.widg_sfr = QWidget(self.widg_reg)
         self.lay_sfr = QHBoxLayout(self.widg_sfr)
-        self.lbl_W = QLabel(self.widg_sfr)
         self.lbl_Stack = QLabel(self.widg_sfr)
-        self.lbl_SP = QLabel(self.widg_sfr)
+        
+        self.widg_sfr_ou = QWidget(self.widg_sfr)
+        self.lay_sfr_ou = QVBoxLayout(self.widg_sfr_ou)
+        
+        self.widg_sfr_vis_hid = QWidget(self.widg_sfr_ou)
+        self.lay_sfr_vis_hid = QHBoxLayout(self.widg_sfr_vis_hid)
+        
+        self.widg_sfr_vis = QWidget(self.widg_sfr_vis_hid)
+        self.lay_sfr_vis = QVBoxLayout(self.widg_sfr_vis)
+        self.lbl_W = QLabel(self.widg_sfr_vis)
+        
+        self.widg_sfr_hid = QWidget(self.widg_sfr_vis_hid)
+        self.lay_sfr_hid = QVBoxLayout(self.widg_sfr_hid)
+        self.lbl_SP = QLabel(self.widg_sfr_hid)
+        
+        self.widg_sfr_etc = QWidget(self.widg_sfr_ou)
+        self.lay_sfr_etc = QVBoxLayout(self.widg_sfr_etc)
+        self.lbl_status = QLabel(self.widg_sfr_etc)
         
         self.tbl_porta.setHorizontalHeaderLabels(['RA 7','RA 6','RA 5','RA 4','RA 3','RA 2','RA 1','RA 0'])
         self.tbl_porta.setVerticalHeaderLabels(['TRIS','i/o','RA'])
