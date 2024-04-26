@@ -40,8 +40,8 @@ class Processor(QObject):
             
 #region Instructions
     def addlw(self, k):
-        self.W += k
         self.digit_carry_flag_add(self.W, k)
+        self.W += k
         self.carry_flag(self.W)
         self.zero_flag(self.W)
         self.mem.inc_pc()
@@ -53,14 +53,14 @@ class Processor(QObject):
 
     def addwf(self, f, d = 0):
         if d == 0:
-            self.W += self.mem[f]
             self.digit_carry_flag_add(self.W, self.mem[f])
+            self.W += self.mem[f]
             self.carry_flag(self.W)
             self.zero_flag(self.W)
         else:
             self.mem[f] += self.W
-            self.carry_flag(self.mem[f])
             self.digit_carry_flag_add(self.mem[f], self.W)
+            self.carry_flag(self.mem[f])
             self.zero_flag(self.mem[f])
         self.mem.inc_pc()
 
@@ -233,22 +233,22 @@ class Processor(QObject):
         return
     
     def sublw(self, k):
-        self.W = W_Register(k - self.W.value)
         self.digit_carry_flag_sub(self.W, k)
+        self.W = W_Register(k - self.W.value)
         self.carry_flag_sub(self.W)
         self.zero_flag(self.W)
         self.mem.inc_pc()
 
     def subwf(self, f, d = 0):
         if d == 0:
-            self.W = W_Register(self.mem[f] - self.W)
             self.digit_carry_flag_sub(self.W, self.mem[f])
+            self.W = W_Register(self.mem[f] - self.W)
             self.carry_flag_sub(self.W)
             self.zero_flag(self.W)
         else:
+            self.digit_carry_flag_sub(self.W, self.mem[f])
             self.mem[f] = Register(self.mem[f] - self.W)
-            self.digit_carry_flag_sub(self.mem[f], self.W)
-            self.carry_flag(self.mem[f])
+            self.carry_flag_sub(self.mem[f])
             self.zero_flag(self.mem[f])
         self.mem.inc_pc()
 
@@ -315,7 +315,7 @@ class Processor(QObject):
             masked_k = k.value & 0x0F
         else:
             masked_k = k & 0x0F
-        if masked_k - masked_reg >= 0:
+        if masked_k - masked_reg >= 0 and masked_k - masked_reg <= 0x0F:
             self.mem[STATUS].set_bit(DC, 1)
         else:
             self.mem[STATUS].set_bit(DC, 0)
