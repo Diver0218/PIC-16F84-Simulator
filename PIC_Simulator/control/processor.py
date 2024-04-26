@@ -353,6 +353,11 @@ class Processor(QObject):
         debugpy.debug_this_thread()
         self.mem[update[0]].set_bit(update[1], update[2])
         self.update_mem()
+    
+    @pyqtSlot(bool)
+    def set_startup_variables(self):
+        self.mem.reset()
+        self.update_mem()
            
     def execute_instruction(self):
         inst = self.inst[self.mem.pc]

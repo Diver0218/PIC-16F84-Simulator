@@ -93,6 +93,7 @@ class MainWindow(QMainWindow):
     sig_steprequest = pyqtSignal(bool)
     sig_init = pyqtSignal(bool)
     sig_update_register_bit = pyqtSignal(list)
+    sig_reset_mem = pyqtSignal(bool)
     code_lbls = []
 
     def __init__(self):
@@ -113,6 +114,7 @@ class MainWindow(QMainWindow):
         #regs
         self.widg_reg = QWidget(self.widg_main)
         self.lay_reg = QVBoxLayout(self.widg_reg)
+        self.but_reg_reset = QPushButton(self.widg_reg)
         self.tbl_porta = MemTable(3, 8, self)
         self.tbl_portb = MemTable(3, 8, self)
         self.tbl_mem = MemTable(80, 9, self)
@@ -145,6 +147,9 @@ class MainWindow(QMainWindow):
         self.lbl_status = QLabel(self.widg_sfr_etc)
         self.lbl_option = QLabel(self.widg_sfr_etc)
         self.lbl_intcon = QLabel(self.widg_sfr_etc)
+
+        self.but_reg_reset.setText("Reset Register")
+        self.but_reg_reset.clicked.connect(self.reset_mem)
         
         self.tbl_porta.setHorizontalHeaderLabels(['RA 7','RA 6','RA 5','RA 4','RA 3','RA 2','RA 1','RA 0'])
         self.tbl_porta.setVerticalHeaderLabels(['TRIS','i/o','RA'])
@@ -181,6 +186,7 @@ class MainWindow(QMainWindow):
         self.lay_sfr.addWidget(self.lbl_stack)
         self.widg_sfr.setFixedWidth(354)
         
+        self.lay_reg.addWidget(self.but_reg_reset)
         self.lay_reg.addWidget(self.tbl_porta)
         self.lay_reg.addWidget(self.tbl_portb)
         self.lay_reg.addWidget(self.tbl_mem)
@@ -298,6 +304,10 @@ class MainWindow(QMainWindow):
     @pyqtSlot()
     def btn_step_method(self):
         self.sig_steprequest.emit(True)
+
+    @pyqtSlot()
+    def reset_mem(self):
+        self.sig_reset_mem.emit(True)
     
     @pyqtSlot(list)
     def update_single_register_bit(self, update):
@@ -326,6 +336,7 @@ class MainWindow(QMainWindow):
         self.p.sig_pc.connect(self.highlight_instruction)
         self.sig_init.connect(self.p.init_view)
         self.sig_update_register_bit.connect(self.p.update_single_register_bit)
+        self.sig_reset_mem.connect(self.p.set_startup_variables)
         self.p.update_mem()
         self.p_thread = QThread()
         self.p.moveToThread(self.p_thread)

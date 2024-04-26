@@ -81,8 +81,6 @@ class Memory():
         else:
             self.stack[self.stackpointer] = self.pc + 1
             self.stackpointer += 1
-        
-
 
     def pop_pc(self):
         if self.stackpointer <= 0:
@@ -93,3 +91,8 @@ class Memory():
             retAdr = self.stack[self.stackpointer]
         return retAdr
     
+    def reset(self):
+        for item in self.eeprom[0]:
+            item.set(0)
+        for item in self.bank_relevant_adr:
+            self.eeprom[1][item].set(0)
