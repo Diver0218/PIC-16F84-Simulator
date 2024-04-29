@@ -31,6 +31,7 @@ class Processor(QObject):
         self.mem.pc = 0
         self.update_pc()
         self.update_mem()
+        self.Vorteiler_count = 0
         
         
     # def set_instructions(self, inst):
@@ -344,6 +345,14 @@ class Processor(QObject):
     def update_pc(self):
         self.sig_pc.emit(self.mem.pc)
         
+    def handle_Timer0(self):
+        self.Vorteiler = pow(2, (self.mem.get_bank_specific_register(1, 1).value & 0x07) + 1)
+        if self.mem.get_bank_specific_register(1, 1).test_bit(5):           
+            self.Vorteiler_count += 1
+            if self.Vorteiler_count == self.Vorteiler:
+                self.mem[1] += 1
+                self.Vorteiler_count = 0
+            
     @pyqtSlot(bool)
     def run_instructions(self, signal):
         if signal:
