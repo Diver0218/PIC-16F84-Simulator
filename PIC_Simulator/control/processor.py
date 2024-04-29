@@ -341,13 +341,14 @@ class Processor(QThread):
         self.sig_pc.emit(self.mem.pc)
         
     @pyqtSlot(bool)
-    def run(self):
+    def run_instructions(self):
+        debugpy.debug_this_thread()
         pass
-        # self._running = True
-        # while self._running == True:
-        #     self.step()
-        #     if self.isInterruptionRequested():
-        #         self._running == False
+        self._running = True
+        while self._running == True:
+            self.step()
+            if self.isInterruptionRequested():
+                self._running == False
             
         
     @pyqtSlot(bool)
