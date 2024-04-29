@@ -12,8 +12,6 @@ from PyQt6.QtWidgets import QDialog
 from PyQt6 import QtGui
 #enddebug
 
-
-
 class MemTable(QTableWidget):
     sig_update_bit = pyqtSignal(list)
 
@@ -22,6 +20,7 @@ class MemTable(QTableWidget):
         self.sig_update_bit.connect(parent.update_single_register_bit)
         self.resizeColumnsToContents()
         self.resizeRowsToContents()
+        self.itemChanged.connect(parent.update_input_mem)
 
     def setData(self, mem):
         rows = self.rowCount()
@@ -92,6 +91,8 @@ class MainWindow(QMainWindow):
     sig_init = pyqtSignal(bool)
     sig_update_register_bit = pyqtSignal(list)
     sig_reset_mem = pyqtSignal(bool)
+    sig_update_input_mem = pyqtSignal(list)
+    is_set_data = True
     code_lbls = []
 
     def __init__(self):
@@ -275,10 +276,12 @@ class MainWindow(QMainWindow):
         #debug:
         #print("Funktion aufgerufen: setMemData")
         #enddebug
+        self.is_set_data = True
         self.tbl_mem.setData(proc_data[0])
         self.tbl_porta.setPortData(proc_data[0], 5)
         self.tbl_portb.setPortData(proc_data[0], 6)
         self.set_fsr(proc_data[0], proc_data[1])
+        self.is_set_data = False
     
     def set_fsr(self, mem:Memory, W):
         #vis
@@ -299,6 +302,11 @@ class MainWindow(QMainWindow):
             stack_str += f"{stack_part:04x}\n".upper()
         self.lbl_stack.setText(f"Stack: \n{stack_str}")
 
+    @pyqtSlot(QTableWidgetItem)
+    def update_input_mem(self, item:QTableWidgetItem):
+        if item.column() == 8 and not self.is_set_data:
+            self.sig_update_input_mem.emit([item.row(), int(item.text(), 16)])
+        
     @pyqtSlot()
     def btn_step_method(self):
         self.sig_steprequest.emit(True)
@@ -335,6 +343,7 @@ class MainWindow(QMainWindow):
         self.sig_init.connect(self.p.init_view)
         self.sig_update_register_bit.connect(self.p.update_single_register_bit)
         self.sig_reset_mem.connect(self.p.set_startup_variables)
+        self.sig_update_input_mem.connect(self.p.update_table_input_mem)
         self.p.update_mem()
         self.p_thread = QThread()
         self.p.moveToThread(self.p_thread)

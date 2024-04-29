@@ -40,9 +40,9 @@ class Memory():
     def __setitem__(self, index, value):
         tuple_index = self._handle_index(index)
         if (self.eeprom[0][3].test_bit(5) and index in self.bank_relevant_adr) or tuple_index[1]:
-            self.eeprom[1][tuple_index[0]] = value
+            self.eeprom[1][tuple_index[0]].set(value)
         else:
-            self.eeprom[0][tuple_index[0]] = value
+            self.eeprom[0][tuple_index[0]].set(value)
 
     def __getitem__(self, index):
         tuple_index = self._handle_index(index)
