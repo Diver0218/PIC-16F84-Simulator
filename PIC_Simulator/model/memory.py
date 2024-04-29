@@ -58,6 +58,8 @@ class Memory():
             return self.eeprom[0][index]
     
     def _handle_index(self, index):
+        if index == 0:
+            return [self.eeprom[0][4].value, 0]   
         if index < 80:
             return [index, 0]
         elif index < 128:
