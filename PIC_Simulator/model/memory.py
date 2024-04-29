@@ -28,6 +28,7 @@ class Memory():
         self.stack : list[int] = [int(0) for _ in range(8)] 
         self.pc : int = 0   
         self.bank_relevant_adr = [0x01, 0x05, 0x06, 0x08, 0x09]
+        self.cycle : int = 0
 
     def __str__(self):
         retValue = ""
@@ -72,7 +73,11 @@ class Memory():
                     
     def inc_pc(self, amount : int = 1):
         self.pc += amount
+        self.cycle += 1
         print(f"PC: {self.pc}")
+        
+    def inc_ciycle(self, amount = 1):
+        self.cycle += amount
 
     def set_pc(self, pc):
         self.pc = pc

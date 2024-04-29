@@ -94,6 +94,7 @@ class Processor(QObject):
     def call(self, k):
         self.mem.push_pc()
         self.mem.set_pc(k)
+        self.mem.inc_ciycle(2)
         return
     
     def clrf(self, f):
@@ -141,6 +142,7 @@ class Processor(QObject):
 
     def goto(self, k):
         self.mem.set_pc(k)
+        self.mem.inc_ciycle(2)
         return
     
     def incf(self, f, d = 0):
@@ -199,16 +201,19 @@ class Processor(QObject):
         self.mem.inc_pc()
     
     def retfie(self):
+        self.mem.inc_ciycle(2)
         # Return from Interrupt
         return
     
     def retlw(self, k):
         self.W.set(k)
         self.mem.set_pc(self.mem.pop_pc())
+        self.mem.inc_ciycle(2)
         return
     
     def _return(self):
         self.mem.set_pc(self.mem.pop_pc())
+        self.mem.inc_ciycle(2)
         return
     
     def rlf(self, f, d = 0):
