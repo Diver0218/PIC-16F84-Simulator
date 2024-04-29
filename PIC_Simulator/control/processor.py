@@ -1,9 +1,9 @@
 from model.memory import Memory
 from model.registers import W_Register, Register
-from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot
+from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot, QThread
 #debug
 from PyQt6.QtWidgets import QDialog
-import debugpy
+import debugpy, time
 #enddebug
 
 STATUS = 0x03
@@ -12,7 +12,7 @@ C = 0
 
 DC = 1
 
-class Processor(QObject):
+class Processor(QThread):
 
     mem = Memory()
     W = W_Register(0)
@@ -31,6 +31,7 @@ class Processor(QObject):
         self.mem.pc = 0
         self.update_pc()
         self.update_mem()
+        self._running = False
         
         
     # def set_instructions(self, inst):
@@ -338,6 +339,15 @@ class Processor(QObject):
         
     def update_pc(self):
         self.sig_pc.emit(self.mem.pc)
+        
+    @pyqtSlot(bool)
+    def run(self):
+        self._running = True
+        while self._running == True:
+            self.step()
+            if self.isInterruptionRequested():
+                self._running == False
+            
         
     @pyqtSlot(bool)
     def step(self):
