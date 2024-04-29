@@ -338,7 +338,7 @@ class MainWindow(QMainWindow):
         self.p_thread.sig_pc.connect(self.highlight_instruction)
         self.sig_init.connect(self.p_thread.init_view)
         self.sig_update_register_bit.connect(self.p_thread.update_single_register_bit)
-        self.sig_reset_mem.connect(self.p.set_startup_variables)
+        self.sig_reset_mem.connect(self.p_thread.set_startup_variables)
         self.sig_run.connect(self.p_thread.run)
         self.p_thread.update_mem()
         # self.p_thread = QThread()

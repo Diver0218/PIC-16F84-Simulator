@@ -342,11 +342,12 @@ class Processor(QThread):
         
     @pyqtSlot(bool)
     def run(self):
-        self._running = True
-        while self._running == True:
-            self.step()
-            if self.isInterruptionRequested():
-                self._running == False
+        pass
+        # self._running = True
+        # while self._running == True:
+        #     self.step()
+        #     if self.isInterruptionRequested():
+        #         self._running == False
             
         
     @pyqtSlot(bool)
