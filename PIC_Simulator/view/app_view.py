@@ -93,11 +93,13 @@ class MainWindow(QMainWindow):
     sig_steprequest = pyqtSignal(bool)
     sig_init = pyqtSignal(bool)
     sig_update_register_bit = pyqtSignal(list)
+    sig_run = pyqtSignal(bool)
     code_lbls = []
 
     def __init__(self):
         super().__init__()
         self.lst = Listing("")
+        self._running = False
 
     def create_window(self): 
 ##########################
@@ -175,6 +177,8 @@ class MainWindow(QMainWindow):
 
         
         self.btn_step.clicked.connect(self.btn_step_method)
+        self.btn_run.clicked.connect(self.run)
+        self.btn_stop.clicked.connect(self.stop)
         
         self.lay_runctrl.addWidget(self.btn_step)
         self.lay_runctrl.addWidget(self.btn_run)
@@ -266,15 +270,16 @@ class MainWindow(QMainWindow):
             print(self.lst.get_instructions())
             
     def init_new_processor(self):
-        self.p = Processor(self.lst.get_instructions())
-        self.p.sig_mem.connect(self.setMemData)
-        self.sig_steprequest.connect(self.p.step)
-        self.p.sig_pc.connect(self.highlight_instruction)
-        self.sig_init.connect(self.p.init_view)
-        self.sig_update_register_bit.connect(self.p.update_single_register_bit)
-        self.p.update_mem()
-        self.p_thread = QThread()
-        self.p.moveToThread(self.p_thread)
+        self.p_thread = Processor(self.lst.get_instructions())
+        self.p_thread.sig_mem.connect(self.setMemData)
+        self.sig_steprequest.connect(self.p_thread.step)
+        self.p_thread.sig_pc.connect(self.highlight_instruction)
+        self.sig_init.connect(self.p_thread.init_view)
+        self.sig_update_register_bit.connect(self.p_thread.update_single_register_bit)
+        self.sig_run.connect(self.p_thread.run)
+        self.p_thread.update_mem()
+        # self.p_thread = QThread()
+        # self.p.moveToThread(self.p_thread)
         self.p_thread.start()
 
     def show_Code(self, file):
@@ -312,3 +317,11 @@ class MainWindow(QMainWindow):
             else:
                 item = self.list_code.item(i)
                 item.setSelected(False)
+                
+    @pyqtSlot()
+    def run(self):
+        self.sig_run.emit(True)
+        
+    @pyqtSlot()
+    def stop(self):
+        self.p_thread.requestInterruption()
