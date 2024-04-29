@@ -31,7 +31,6 @@ class Processor(QObject):
         self.mem.pc = 0
         self.update_pc()
         self.update_mem()
-        self._running = False
         
         
     # def set_instructions(self, inst):
