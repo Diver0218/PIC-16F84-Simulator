@@ -19,6 +19,7 @@ class Processor(QObject):
     inst = list()
     
     sig_mem = pyqtSignal(tuple)
+    sig_updated_value_mem = pyqtSignal(Memory)
     sig_quartz = pyqtSignal(int)
     sig_inst = pyqtSignal(list)
     sig_pc = pyqtSignal(int)
@@ -380,8 +381,12 @@ class Processor(QObject):
 
     @pyqtSlot(list)
     def update_single_register_bit(self, update):
-        debugpy.debug_this_thread()
         self.mem[update[0]].set_bit(update[1], update[2])
+        self.update_mem()
+        
+    @pyqtSlot(list)
+    def update_table_input_mem(self, item:list):
+        self.mem[item[0]] = item[1]
         self.update_mem()
     
     @pyqtSlot(bool)
