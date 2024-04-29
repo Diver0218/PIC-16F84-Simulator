@@ -9,10 +9,9 @@ import debugpy, time
 STATUS = 0x03
 Z = 2
 C = 0
-
 DC = 1
 
-class Processor(QThread):
+class Processor(QObject):
 
     mem = Memory()
     W = W_Register(0)
@@ -23,6 +22,7 @@ class Processor(QThread):
     sig_quartz = pyqtSignal(int)
     sig_inst = pyqtSignal(list)
     sig_pc = pyqtSignal(int)
+    sig_continue = pyqtSignal(bool)
 
     def __init__(self, inst) -> None:
         super().__init__()
@@ -59,8 +59,8 @@ class Processor(QThread):
             self.carry_flag(self.W)
             self.zero_flag(self.W)
         else:
-            self.mem[f] += self.W
             self.digit_carry_flag_add(self.mem[f], self.W)
+            self.mem[f] += self.W
             self.carry_flag(self.mem[f])
             self.zero_flag(self.mem[f])
         self.mem.inc_pc()
@@ -128,7 +128,6 @@ class Processor(QThread):
         else:
             self.W = W_Register(self.mem[f].decrement())
             if self.W & 0xFF == 0:
-                print("is zero")
                 self.mem.inc_pc()
         self.mem.inc_pc()
 
@@ -158,6 +157,7 @@ class Processor(QThread):
         if d == 1:
             self.mem[f] = self.mem[f].increment()
             if self.mem[f] & 0xFF == 0:
+                print("is zero")
                 self.mem.inc_pc()
         else:
             self.W = W_Register(self.mem[f].increment())
@@ -323,7 +323,7 @@ class Processor(QThread):
             masked_k = k.value & 0x0F
         else:
             masked_k = k & 0x0F
-        if masked_k - masked_reg >= 0 and masked_k - masked_reg <= 0x0F:
+        if masked_k - masked_reg >= 0x0F:
             self.mem[STATUS].set_bit(DC, 1)
         else:
             self.mem[STATUS].set_bit(DC, 0)
@@ -341,14 +341,11 @@ class Processor(QThread):
         self.sig_pc.emit(self.mem.pc)
         
     @pyqtSlot(bool)
-    def run_instructions(self):
-        debugpy.debug_this_thread()
-        pass
-        self._running = True
-        while self._running == True:
+    def run_instructions(self, signal):
+        if signal:
             self.step()
-            if self.isInterruptionRequested():
-                self._running == False
+            time.sleep(0.1)
+            self.sig_continue.emit(True)
             
         
     @pyqtSlot(bool)

@@ -15,8 +15,7 @@ class Register():
     
     def increment(self):
         retval = self.value + 1
-        if retval > 0xFF:
-            retval = 0xFF
+        retval &= 0xFF
         return Register(retval)
 
     def decrement(self):

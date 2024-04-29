@@ -323,7 +323,7 @@ class MainWindow(QMainWindow):
         self.lst = Listing(filename[0])
         with open(filename[0], 'r') as file:
             try:
-                self.p_thread.terminate()
+                self.p_thread.quit()
                 print("Thread terminated")
             except Exception:
                 print("No Thread to terminate")
@@ -332,17 +332,18 @@ class MainWindow(QMainWindow):
             print(self.lst.get_instructions())
             
     def init_new_processor(self):
-        self.p_thread = Processor(self.lst.get_instructions())
-        self.p_thread.sig_mem.connect(self.setMemData)
-        self.sig_steprequest.connect(self.p_thread.step)
-        self.p_thread.sig_pc.connect(self.highlight_instruction)
-        self.sig_init.connect(self.p_thread.init_view)
-        self.sig_update_register_bit.connect(self.p_thread.update_single_register_bit)
-        self.sig_reset_mem.connect(self.p_thread.set_startup_variables)
-        self.sig_run.connect(self.p_thread.run_instructions)
-        self.p_thread.update_mem()
-        # self.p_thread = QThread()
-        # self.p.moveToThread(self.p_thread)
+        self.p = Processor(self.lst.get_instructions())
+        self.p.sig_mem.connect(self.setMemData)
+        self.sig_steprequest.connect(self.p.step)
+        self.p.sig_pc.connect(self.highlight_instruction)
+        self.sig_init.connect(self.p.init_view)
+        self.sig_update_register_bit.connect(self.p.update_single_register_bit)
+        self.sig_reset_mem.connect(self.p.set_startup_variables)
+        self.sig_run.connect(self.p.run_instructions)
+        self.p.sig_continue.connect(self.continue_run)
+        self.p.update_mem()
+        self.p_thread = QThread()
+        self.p.moveToThread(self.p_thread)
         self.p_thread.start()
 
     def show_Code(self, file):
@@ -383,8 +384,14 @@ class MainWindow(QMainWindow):
                 
     @pyqtSlot()
     def run(self):
-        self.sig_run.emit(True)
+        self._running = True
+        self.sig_run.emit(self._running)
         
     @pyqtSlot()
     def stop(self):
-        self.p_thread.requestInterruption()
+        self._running = False
+        self.sig_run.emit(self._running)
+    
+    @pyqtSlot(bool)
+    def continue_run(self):
+        self.sig_run.emit(self._running)
