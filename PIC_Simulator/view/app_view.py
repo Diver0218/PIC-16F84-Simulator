@@ -34,9 +34,9 @@ class MemTable(QTableWidget):
                     newitem = QTableWidgetItem(f"{item:02x}".upper())
                     self.setItem(i , j, newitem)
                 else:
-                    item = mem.get_bank_specific_register(i, 0).test_bit(7-j)
-                    newitem = QTableWidgetItem(str(item))
-                    self.setItem(i , j, newitem)
+                    item = TblPortButton(i, 7 - j, self)
+                    item.setText(str(mem.get_bank_specific_register(i, 0).test_bit(7 - j)))
+                    self.setCellWidget(i , j, item)
             verticaHeaders.append(str(hex(i)).upper()[2:])
         self.setVerticalHeaderLabels(verticaHeaders)
 
