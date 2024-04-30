@@ -108,6 +108,3 @@ class Memory(QObject):
             
     def increment_timer0(self):
         self.eeprom[0][1].value += 1
-        
-    def timer0_overflow(self):
-        self.eeprom[0][1].value == 0x00

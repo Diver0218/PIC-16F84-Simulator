@@ -383,7 +383,7 @@ class Processor(QObject):
                 self.mem.increment_timer0()
                 self.Vorteiler_count %= self.Vorteiler
             if self.mem.get_bank_specific_register(1, 0).value > 0xFF:
-                 self.mem.timer0_overflow()
+                 self.mem.eeprom[0][1].set(0)
                 # interrupt
           
 #region signals
