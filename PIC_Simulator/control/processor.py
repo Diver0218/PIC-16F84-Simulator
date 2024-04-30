@@ -33,6 +33,10 @@ class Processor(QObject):
         self.update_pc()
         self.update_mem()
         self.Vorteiler_count = 0
+        self.cycle : int = 0
+        self.mem.sig_timer0_set.connect(self.handle_Timer0_changed)
+        self.Timer0_changed = 0
+        self.Timer0_wrote = False
         
         
     # def set_instructions(self, inst):
@@ -47,11 +51,13 @@ class Processor(QObject):
         self.carry_flag(self.W)
         self.zero_flag(self.W)
         self.mem.inc_pc()
+        self.inc_cycle()
 
     def andlw(self, k):
         self.W &= k
         self.zero_flag(self.W)
         self.mem.inc_pc()
+        self.inc_cycle()
 
     def addwf(self, f, d = 0):
         if d == 0:
@@ -65,6 +71,7 @@ class Processor(QObject):
             self.carry_flag(self.mem[f])
             self.zero_flag(self.mem[f])
         self.mem.inc_pc()
+        self.inc_cycle()
 
     def andwf(self, f, d = 0):
         if d == 0:
@@ -74,40 +81,47 @@ class Processor(QObject):
             self.mem[f] &= self.W
             self.zero_flag(self.mem[f])
         self.mem.inc_pc()
+        self.inc_cycle()
 
     def bcf(self, f, b):
         self.mem[f].set_bit(b, 0)
         self.mem.inc_pc()
+        self.inc_cycle()
 
     def btfsc(self, f, b):
         if not self.mem[f].test_bit(b):
             self.mem.inc_pc()
         self.mem.inc_pc()
+        self.inc_cycle()
 
     def bsf(self, f, b):
         self.mem[f].set_bit(b, 1)
         self.mem.inc_pc()
+        self.inc_cycle()
 
     def btfss(self, f, b):
         if self.mem[f].test_bit(b):
             self.mem.inc_pc()
         self.mem.inc_pc()
+        self.inc_cycle()
 
     def call(self, k):
         self.mem.push_pc()
         self.mem.set_pc(k)
-        self.mem.inc_ciycle(2)
+        self.inc_cycle(2)
         return
     
     def clrf(self, f):
         self.mem[f].set(0x00)
         self.zero_flag(self.mem[f])
         self.mem.inc_pc()
+        self.inc_cycle()
 
     def clrw(self):
         self.W.set(0x00)
         self.zero_flag(self.W)
         self.mem.inc_pc()
+        self.inc_cycle()
 
     def clrwdt(self):
         #clear watch dog timer Routine
@@ -121,17 +135,21 @@ class Processor(QObject):
             self.mem[f] = ~self.mem[f]
             self.zero_flag(self.mem[f])
         self.mem.inc_pc()
+        self.inc_cycle()
 
     def decfsz(self, f, d = 0):
         if d == 1:
             self.mem[f] = self.mem[f].decrement()
             if self.mem[f] & 0xFF == 0:
                 self.mem.inc_pc()
+                self.inc_cycle()
         else:
             self.W = W_Register(self.mem[f].decrement())
             if self.W & 0xFF == 0:
                 self.mem.inc_pc()
+                self.inc_cycle()
         self.mem.inc_pc()
+        self.inc_cycle()
 
     def decf(self, f, d = 0):
         if d == 0:
@@ -141,10 +159,11 @@ class Processor(QObject):
             self.mem[f] = self.mem[f].decrement()
             self.zero_flag(self.mem[f])
         self.mem.inc_pc()
+        self.inc_cycle()
 
     def goto(self, k):
         self.mem.set_pc(k)
-        self.mem.inc_ciycle(2)
+        self.inc_cycle(2)
         return
     
     def incf(self, f, d = 0):
@@ -155,6 +174,7 @@ class Processor(QObject):
             self.mem[f] = self.mem[f].increment()
             self.zero_flag(self.mem[f])
         self.mem.inc_pc()
+        self.inc_cycle()
 
     def incfsz(self, f, d = 0):
         if d == 1:
@@ -162,16 +182,20 @@ class Processor(QObject):
             if self.mem[f] & 0xFF == 0:
                 print("is zero")
                 self.mem.inc_pc()
+                self.inc_cycle()
         else:
             self.W = W_Register(self.mem[f].increment())
             if self.W & 0xFF == 0:
                 self.mem.inc_pc()
+                self.inc_cycle()
         self.mem.inc_pc()
+        self.inc_cycle()
 
     def iorlw(self, k):
         self.W |= k
         self.zero_flag(self.W)
         self.mem.inc_pc()
+        self.inc_cycle()
 
     def iorwf(self, f, d  = 0):
         if d == 0:
@@ -181,10 +205,12 @@ class Processor(QObject):
             self.mem[f] |= self.W
             self.zero_flag(self.mem[f])
         self.mem.inc_pc()
+        self.inc_cycle()
 
     def movlw(self, k):
         self.W.set(k)
         self.mem.inc_pc()
+        self.inc_cycle()
 
     def movf(self, f, d = 0):
         if d == 0:
@@ -194,28 +220,31 @@ class Processor(QObject):
             self.mem[f].set(self.mem[f])
             self.zero_flag(self.mem[f])
         self.mem.inc_pc()
+        self.inc_cycle()
                
     def movwf(self, f):
         self.mem[f] = Register(self.W)
         self.mem.inc_pc()
+        self.inc_cycle()
     
     def nop(self):
         self.mem.inc_pc()
+        self.inc_cycle()
     
     def retfie(self):
-        self.mem.inc_ciycle(2)
+        self.inc_cycle(2)
         # Return from Interrupt
         return
     
     def retlw(self, k):
         self.W.set(k)
         self.mem.set_pc(self.mem.pop_pc())
-        self.mem.inc_ciycle(2)
+        self.inc_cycle(2)
         return
     
     def _return(self):
         self.mem.set_pc(self.mem.pop_pc())
-        self.mem.inc_ciycle(2)
+        self.inc_cycle(2)
         return
     
     def rlf(self, f, d = 0):
@@ -229,6 +258,7 @@ class Processor(QObject):
             self.mem[f] &= 0xFF
             self.mem[f].set_bit(0, carry_tmp)
         self.mem.inc_pc()
+        self.inc_cycle()
 
     def rrf(self, f, d = 0):
         carry_tmp = self.mem[STATUS].test_bit(C)
@@ -241,6 +271,7 @@ class Processor(QObject):
             self.mem[f] &= 0xFF
             self.mem[f].set_bit(7, carry_tmp)
         self.mem.inc_pc()
+        self.inc_cycle()
 
     def sleep(self):
         # Sleep Routine
@@ -252,6 +283,7 @@ class Processor(QObject):
         self.carry_flag_sub(self.W)
         self.zero_flag(self.W)
         self.mem.inc_pc()
+        self.inc_cycle()
 
     def subwf(self, f, d = 0):
         if d == 0:
@@ -265,17 +297,20 @@ class Processor(QObject):
             self.carry_flag_sub(self.mem[f])
             self.zero_flag(self.mem[f])
         self.mem.inc_pc()
+        self.inc_cycle()
 
     def swapf(self, f, d = 0):
         higher = (self.mem[f].value & 0xF0) >> 4
         lower = self.mem[f].value & 0x0F
         self.mem[f] = Register((lower << 4) + higher)
         self.mem.inc_pc()
+        self.inc_cycle()
     
     def xorlw(self, k):
         self.W ^= k
         self.zero_flag(self.W)
         self.mem.inc_pc()
+        self.inc_cycle()
 
     def xorwf(self, f, d = 0):
         if d == 0:
@@ -285,8 +320,10 @@ class Processor(QObject):
             self.mem[f] ^= self.W
             self.zero_flag(self.mem[f])
         self.mem.inc_pc()
+        self.inc_cycle()
 #endregion
 
+#region flags
     def carry_flag(self, reg):
         if reg.value > 0xFF:
             reg.set(reg & 0xFF)
@@ -333,7 +370,26 @@ class Processor(QObject):
             self.mem[STATUS].set_bit(DC, 1)
         else:
             self.mem[STATUS].set_bit(DC, 0)
+         
+#endregion
             
+    def handle_Timer0(self, cycles):
+        if self.Timer0_changed > 0:
+            self.Timer0_changed -= 1
+            return
+        self.Vorteiler = pow(2, (self.mem.get_bank_specific_register(1, 1).value & 0x07) + 1)
+        if not self.mem.get_bank_specific_register(1, 1).test_bit(5):           
+            self.Vorteiler_count += cycles
+            if self.Vorteiler_count >= self.Vorteiler:
+                self.mem[1] += 1
+                self.Timer0_wrote = True       
+                self.Vorteiler_count %= self.Vorteiler
+                if self.mem[1].value > 0xFF:
+                    self.mem[1] &= 0xFF
+                    # interrupt
+          
+#region signals
+                    
     def update_mem(self):
         self.sig_mem.emit((self.mem, self.W))
         
@@ -346,19 +402,23 @@ class Processor(QObject):
     def update_pc(self):
         self.sig_pc.emit(self.mem.pc)
         
-    def handle_Timer0(self):
-        self.Vorteiler = pow(2, (self.mem.get_bank_specific_register(1, 1).value & 0x07) + 1)
-        if self.mem.get_bank_specific_register(1, 1).test_bit(5):           
-            self.Vorteiler_count += 1
-            if self.Vorteiler_count == self.Vorteiler:
-                self.mem[1] += 1
-                self.Vorteiler_count = 0
+    def inc_cycle(self, amount = 1):
+        self.cycle += amount
+        self.handle_Timer0(amount)
+        
             
+    pyqtSlot(bool)
+    def handle_Timer0_changed(self, signal):
+        if not self.Timer0_wrote:
+            self.Timer0_changed = 2
+        else:
+            
+    
     @pyqtSlot(bool)
     def run_instructions(self, signal):
         if signal:
             self.step()
-            time.sleep(0.1)
+            # time.sleep(0.1)
             self.sig_continue.emit(True)
             
         
@@ -393,6 +453,8 @@ class Processor(QObject):
     def set_startup_variables(self):
         self.mem.reset()
         self.update_mem()
+
+#endregion
            
     def execute_instruction(self):
         inst = self.inst[self.mem.pc]
