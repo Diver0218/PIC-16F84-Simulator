@@ -105,3 +105,9 @@ class Memory(QObject):
             item.set(0)
         for item in self.bank_relevant_adr:
             self.eeprom[1][item].set(0)
+            
+    def increment_timer0(self):
+        self.eeprom[0][1].value += 1
+        
+    def timer0_overflow(self):
+        self.eeprom[0][1].value == 0x00

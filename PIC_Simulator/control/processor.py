@@ -36,7 +36,6 @@ class Processor(QObject):
         self.cycle : int = 0
         self.mem.sig_timer0_set.connect(self.handle_Timer0_changed)
         self.Timer0_changed = 0
-        self.Timer0_wrote = False
         
         
     # def set_instructions(self, inst):
@@ -381,12 +380,11 @@ class Processor(QObject):
         if not self.mem.get_bank_specific_register(1, 1).test_bit(5):           
             self.Vorteiler_count += cycles
             if self.Vorteiler_count >= self.Vorteiler:
-                self.mem[1] += 1
-                self.Timer0_wrote = True       
+                self.mem.increment_timer0()
                 self.Vorteiler_count %= self.Vorteiler
-                if self.mem[1].value > 0xFF:
-                    self.mem[1] &= 0xFF
-                    # interrupt
+            if self.mem.get_bank_specific_register(1, 0).value > 0xFF:
+                 self.mem.timer0_overflow()
+                # interrupt
           
 #region signals
                     
@@ -401,14 +399,6 @@ class Processor(QObject):
         
     def update_pc(self):
         self.sig_pc.emit(self.mem.pc)
-        
-    def handle_Timer0(self):
-        self.Vorteiler = pow(2, (self.mem.get_bank_specific_register(1, 1).value & 0x07) + 1)
-        if self.mem.get_bank_specific_register(1, 1).test_bit(5):           
-            self.Vorteiler_count += 1
-            if self.Vorteiler_count == self.Vorteiler:
-                self.mem[1] += 1
-                self.Vorteiler_count = 0
             
     def inc_cycle(self, amount = 1):
         self.cycle += amount
@@ -417,9 +407,7 @@ class Processor(QObject):
             
     pyqtSlot(bool)
     def handle_Timer0_changed(self, signal):
-        if not self.Timer0_wrote:
-            self.Timer0_changed = 2
-        else:
+        self.Timer0_changed = 2
             
     
     @pyqtSlot(bool)
