@@ -399,7 +399,6 @@ class MainWindow(QMainWindow):
     @pyqtSlot()
     def stop(self):
         self._running = False
-        self.sig_run.emit(self._running)
     
     @pyqtSlot(bool)
     def continue_run(self):
