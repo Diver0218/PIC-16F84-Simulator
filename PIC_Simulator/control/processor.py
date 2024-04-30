@@ -457,16 +457,20 @@ class Processor(QObject):
         elif intcon.test_bit(4) and not option.test_bit(6) and old_rb.test_bit(0) and not self.mem[6].test_bit(0):
             intcon.set_bit(1, 1)
         
-        rb47_old = old_rb & 0b11110000
-        rb47_new = self.mem[6] & 0b11110000
-        if intcon.test_bit(3) and rb47_new != rb47_old:
+        changed_bit = (old_rb.value & 0b11110000) ^ (self.mem[6].value & 0b11110000)
+        index = 0
+        while changed_bit < 1:
+            index += 1
+            changed_bit = changed_bit >> 1
+        
+        if intcon.test_bit(3) and self.mem.get_bank_specific_register(6, 1).test_bit(index) and changed_bit:
             intcon.set_bit(0, 1)
-            
             
     @pyqtSlot(list)
     def update_single_register_bit(self, update):
+        debugpy.debug_this_thread()
         if update[0] == 6:
-            tmp_rb = self.mem[6]
+            tmp_rb = Register(0 if update[2] else 1)
         self.mem[update[0]].set_bit(update[1], update[2])
         if update[0] == 6:
             self.set_interrupt(tmp_rb)
