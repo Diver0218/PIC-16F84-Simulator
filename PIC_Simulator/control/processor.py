@@ -419,7 +419,9 @@ class Processor(QObject):
     @pyqtSlot(bool)
     def step(self):
         debugpy.debug_this_thread()
+        self.tmp_rb0 = self.mem[6].test_bit(0)
         self.execute_instruction()
+        self.int_interrupt(self.tmp_rb0)
         self.handle_interrupts()
         self.update_mem()
         #debug
@@ -440,6 +442,12 @@ class Processor(QObject):
                 self.mem.push_pc()
                 self.mem.set_pc(0x4)
 
+    def int_interrupt(self, old_rb0):
+        if self.mem.get_bank_specific_register(1, 1).test_bit(6) and not old_rb0 and self.mem[6].test_bit(0):
+            self.mem[0xB].set_bit(1, 1)
+        elif not self.mem.get_bank_specific_register(1, 1).test_bit(6) and old_rb0 and not self.mem[6].test_bit(0):
+            self.mem[0xB].set_bit(1, 1)
+            
     @pyqtSlot(list)
     def update_single_register_bit(self, update):
         self.mem[update[0]].set_bit(update[1], update[2])
