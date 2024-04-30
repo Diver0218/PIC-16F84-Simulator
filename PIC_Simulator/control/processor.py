@@ -22,6 +22,7 @@ class Processor(QObject):
     sig_updated_value_mem = pyqtSignal(Memory)
     sig_quartz = pyqtSignal(int)
     sig_inst = pyqtSignal(list)
+    sig_pc = pyqtSignal(int)
     sig_continue = pyqtSignal(bool)
 
     def __init__(self, inst) -> None:
@@ -29,6 +30,7 @@ class Processor(QObject):
         self.inst = inst
         self.mem.__init__()
         self.mem.pc = 0
+        self.update_pc()
         self.update_mem()
         self.Vorteiler_count = 0
         
@@ -340,6 +342,9 @@ class Processor(QObject):
         
     def update_inst(self, inst):
         self.sig_inst.emit(self.inst)
+    
+    def update_pc(self):
+        self.sig_pc.emit(self.mem.pc)
         
     def handle_Timer0(self):
         self.Vorteiler = pow(2, (self.mem.get_bank_specific_register(1, 1).value & 0x07) + 1)
@@ -360,11 +365,12 @@ class Processor(QObject):
     @pyqtSlot(bool)
     def step(self):
         debugpy.debug_this_thread()
-        self.tmp_rb0 = self.mem[6].test_bit(0)
+        self.tmp_rb = self.mem[6]
         self.execute_instruction()
-        self.int_interrupt(self.tmp_rb0)
+        self.set_interrupt(self.tmp_rb)
         self.handle_interrupts()
         self.update_mem()
+        self.update_pc()
         #debug
         #print("Processor: Funktion aufgerufen: step")
         #enddebug
@@ -374,6 +380,7 @@ class Processor(QObject):
         self.update_mem()
         self.update_quartz()
         self.update_inst(self.inst)
+        self.update_pc()
     
     def handle_interrupts(self):
         intcon = self.mem[0xB]
@@ -383,15 +390,27 @@ class Processor(QObject):
                 self.mem.push_pc()
                 self.mem.set_pc(0x4)
 
-    def int_interrupt(self, old_rb0):
-        if self.mem.get_bank_specific_register(1, 1).test_bit(6) and not old_rb0 and self.mem[6].test_bit(0):
-            self.mem[0xB].set_bit(1, 1)
-        elif not self.mem.get_bank_specific_register(1, 1).test_bit(6) and old_rb0 and not self.mem[6].test_bit(0):
-            self.mem[0xB].set_bit(1, 1)
+    def set_interrupt(self, old_rb:Register):
+        intcon = self.mem[0xB]
+        option = self.mem.get_bank_specific_register(1, 1)
+        if intcon.test_bit(4) and option.test_bit(6) and not old_rb.test_bit(0) and self.mem[6].test_bit(0):
+            intcon.set_bit(1, 1)
+        elif intcon.test_bit(4) and not option.test_bit(6) and old_rb.test_bit(0) and not self.mem[6].test_bit(0):
+            intcon.set_bit(1, 1)
+        
+        rb47_old = old_rb & 0b11110000
+        rb47_new = self.mem[6] & 0b11110000
+        if intcon.test_bit(3) and rb47_new != rb47_old:
+            intcon.set_bit(0, 1)
+            
             
     @pyqtSlot(list)
     def update_single_register_bit(self, update):
+        if update[0] == 6:
+            tmp_rb = self.mem[6]
         self.mem[update[0]].set_bit(update[1], update[2])
+        if update[0] == 6:
+            self.set_interrupt(tmp_rb)
         self.update_mem()
         
     @pyqtSlot(list)
