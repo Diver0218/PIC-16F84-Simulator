@@ -341,9 +341,6 @@ class Processor(QObject):
     def update_inst(self, inst):
         self.sig_inst.emit(self.inst)
         
-    def update_pc(self):
-        self.sig_pc.emit(self.mem.pc)
-        
     def handle_Timer0(self):
         self.Vorteiler = pow(2, (self.mem.get_bank_specific_register(1, 1).value & 0x07) + 1)
         if self.mem.get_bank_specific_register(1, 1).test_bit(5):           
