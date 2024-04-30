@@ -229,9 +229,9 @@ class Processor(QObject):
         self.inc_cycle()
     
     def retfie(self):
-        self.inc_cycle(2)
-        # Return from Interrupt
-        return
+        self.mem.inc_ciycle(2)
+        self.mem[0xB].set_bit(7, 1)
+        self.mem.pop_pc()
     
     def retlw(self, k):
         self.W.set(k)
@@ -420,6 +420,7 @@ class Processor(QObject):
     def step(self):
         debugpy.debug_this_thread()
         self.execute_instruction()
+        self.handle_interrupts()
         self.update_mem()
         #debug
         #print("Processor: Funktion aufgerufen: step")
@@ -430,6 +431,14 @@ class Processor(QObject):
         self.update_mem()
         self.update_quartz()
         self.update_inst(self.inst)
+    
+    def handle_interrupts(self):
+        intcon = self.mem[0xB]
+        if intcon.test_bit(7):
+            intcon.set_bit(7, 0)
+            if (intcon.test_bit(5) and intcon.test_bit(2)) or (intcon.test_bit(4) and intcon.test_bit(1)) or (intcon.test_bit(3) and intcon.test_bit(0)):
+                self.mem.push_pc()
+                self.mem.set_pc(0x4)
 
     @pyqtSlot(list)
     def update_single_register_bit(self, update):
