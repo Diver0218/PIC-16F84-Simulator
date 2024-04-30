@@ -22,7 +22,6 @@ class Processor(QObject):
     sig_updated_value_mem = pyqtSignal(Memory)
     sig_quartz = pyqtSignal(int)
     sig_inst = pyqtSignal(list)
-    sig_pc = pyqtSignal(int)
     sig_continue = pyqtSignal(bool)
 
     def __init__(self, inst) -> None:
@@ -30,7 +29,6 @@ class Processor(QObject):
         self.inst = inst
         self.mem.__init__()
         self.mem.pc = 0
-        self.update_pc()
         self.update_mem()
         self.Vorteiler_count = 0
         
@@ -367,7 +365,6 @@ class Processor(QObject):
         debugpy.debug_this_thread()
         self.execute_instruction()
         self.update_mem()
-        self.update_pc()
         #debug
         #print("Processor: Funktion aufgerufen: step")
         #enddebug
@@ -377,7 +374,6 @@ class Processor(QObject):
         self.update_mem()
         self.update_quartz()
         self.update_inst(self.inst)
-        self.update_pc()
 
     @pyqtSlot(list)
     def update_single_register_bit(self, update):
