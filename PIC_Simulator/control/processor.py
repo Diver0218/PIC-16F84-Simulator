@@ -426,7 +426,7 @@ class Processor(QObject):
         debugpy.debug_this_thread()
         self.tmp_rb = self.mem[6]
         self.execute_instruction()
-        self.set_interrupt(self.tmp_rb)
+        self.set_interrupt_flags(self.tmp_rb)
         self.handle_interrupts()
         self.update_mem()
         self.update_pc()
@@ -449,7 +449,7 @@ class Processor(QObject):
                 self.mem.push_pc()
                 self.mem.set_pc(0x4)
 
-    def set_interrupt(self, old_rb:Register):
+    def set_interrupt_flags(self, old_rb:Register):
         intcon = self.mem[0xB]
         option = self.mem.get_bank_specific_register(1, 1)
         if option.test_bit(6) and not old_rb.test_bit(0) and self.mem[6].test_bit(0):
@@ -473,7 +473,7 @@ class Processor(QObject):
             tmp_rb = Register(0 if update[2] else 1)
         self.mem[update[0]].set_bit(update[1], update[2])
         if update[0] == 6:
-            self.set_interrupt(tmp_rb)
+            self.set_interrupt_flags(tmp_rb)
         self.update_mem()
         
     @pyqtSlot(list)
