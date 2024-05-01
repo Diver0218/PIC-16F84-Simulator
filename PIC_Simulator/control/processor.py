@@ -106,7 +106,8 @@ class Processor(QObject):
 
     def call(self, k):
         self.mem.push_pc()
-        self.mem.set_pc(k)
+        pclath43 = (self.mem[0xA].value & 11000) << 8
+        self.mem.set_pc(k+pclath43)
         self.inc_cycle(2)
         return
     
@@ -161,7 +162,8 @@ class Processor(QObject):
         self.inc_cycle()
 
     def goto(self, k):
-        self.mem.set_pc(k)
+        pclath43 = (self.mem[0xA].value & 11000) << 8
+        self.mem.set_pc(k+pclath43)
         self.inc_cycle(2)
         return
     

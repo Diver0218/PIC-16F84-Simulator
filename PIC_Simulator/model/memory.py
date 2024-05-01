@@ -77,7 +77,10 @@ class Memory(QObject):
                 return [index - 128, 0]
                     
     def inc_pc(self, amount : int = 1):
-        self.pc += amount
+        if self.pc < 8192:
+            self.pc += amount
+        else:
+            self.pc = 0
         print(f"PC: {self.pc}")
 
     def set_pc(self, pc):
