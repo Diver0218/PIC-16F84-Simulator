@@ -33,6 +33,7 @@ class Memory(QObject):
         self.stack : list[int] = [int(0) for _ in range(8)] 
         self.pc : int = 0   
         self.bank_relevant_adr = [0x01, 0x05, 0x06, 0x08, 0x09]
+        self.power_reset()
 
     def __str__(self):
         retValue = ""
@@ -107,10 +108,22 @@ class Memory(QObject):
         return retAdr
     
     def reset(self):
-        for item in self.eeprom[0]:
+        for item in self.eeprom[0xc:]:
             item.set(0)
-        for item in self.bank_relevant_adr:
-            self.eeprom[1][item].set(0)
+        self[2].set(0)
+        self[3] = self[3] & 0b00011111
+        self[0xA].set(0)
+        self[0xB] = self[0xB] & 0b00000001
+        self[0x81].set(0b11111111)
+        self[0x85].set(0b00011111)
+        self[0x86].set(0b11111111)
+        self[0x88] = self[0x88] & 0b00001000
             
     def increment_timer0(self):
         self.eeprom[0][1].value += 1
+
+    def power_reset(self):
+        self[3].set(0b00011000)
+        self[0x81].set(0b11111111)
+        self[0x85].set(0b00011111)
+        self[0x86].set(0b11111111)
