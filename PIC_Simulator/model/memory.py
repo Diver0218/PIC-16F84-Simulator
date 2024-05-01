@@ -24,6 +24,7 @@ class Memory(QObject):
     # EECON2 : Register
     
     sig_timer0_set = pyqtSignal(bool)
+    sig_pclath = pyqtSignal(bool)
 
     def __init__(self):
         super().__init__()
@@ -49,6 +50,8 @@ class Memory(QObject):
             self.eeprom[1][tuple_index[0]].set(value)
         else:
             self.eeprom[0][tuple_index[0]].set(value)
+        if tuple_index == [2, 0]:
+            self.sig_pclath.emit(True) 
 
     def __getitem__(self, index):
         tuple_index = self._handle_index(index)

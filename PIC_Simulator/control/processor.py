@@ -35,7 +35,9 @@ class Processor(QObject):
         self.Vorteiler_count = 0
         self.cycle : int = 0
         self.mem.sig_timer0_set.connect(self.handle_Timer0_changed)
+        self.mem.sig_pclath.connect(self.handle_pclath)
         self.Timer0_changed = 0
+        self.inst_pcl_set = False
         
         
     # def set_instructions(self, inst):
@@ -106,7 +108,7 @@ class Processor(QObject):
 
     def call(self, k):
         self.mem.push_pc()
-        pclath43 = (self.mem[0xA].value & 11000) << 8
+        pclath43 = (self.mem[0xA].value & 0b11000) << 8
         self.mem.set_pc(k+pclath43)
         self.inc_cycle(2)
         return
@@ -162,7 +164,7 @@ class Processor(QObject):
         self.inc_cycle()
 
     def goto(self, k):
-        pclath43 = (self.mem[0xA].value & 11000) << 8
+        pclath43 = (self.mem[0xA].value & 0b11000) << 8
         self.mem.set_pc(k+pclath43)
         self.inc_cycle(2)
         return
@@ -435,10 +437,14 @@ class Processor(QObject):
         self.handle_Timer0(amount)
         
             
-    pyqtSlot(bool)
+    @pyqtSlot(bool)
     def handle_Timer0_changed(self, signal):
         self.Timer0_changed = 2
             
+    @pyqtSlot(bool)
+    def handle_pclath(self):
+        if not self.inst_pcl_set:
+            self.mem.set_pc(self.mem[2].value + (self.mem[0xA].value << 8))
     
     @pyqtSlot(bool)
     def run_instructions(self, signal):
@@ -567,4 +573,6 @@ class Processor(QObject):
                 self.xorwf(inst['file'], inst['destination'])
             case _:
                 pass
-            
+        self.inst_pcl_set = True
+        self.mem[2] = (self.mem.pc & 0b0000011111111)
+        self.inst_pcl_set = False                
