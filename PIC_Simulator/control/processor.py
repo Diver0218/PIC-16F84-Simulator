@@ -24,6 +24,7 @@ class Processor(QObject):
     sig_inst = pyqtSignal(list)
     sig_pc = pyqtSignal(int)
     sig_continue = pyqtSignal(bool)
+    sig_runtime = pyqtSignal(int)
 
     def __init__(self, inst) -> None:
         super().__init__()
@@ -439,6 +440,7 @@ class Processor(QObject):
             
     def inc_cycle(self, amount = 1):
         self.cycle += amount
+        self.sig_runtime.emit(self.cycle)
         self.handle_Timer0(amount)
         
             

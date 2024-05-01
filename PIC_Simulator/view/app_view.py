@@ -212,6 +212,9 @@ class MainWindow(QMainWindow):
         
         self.widg_freq = QWidget(self.widg_runctrl)
         self.lay_freq = QHBoxLayout(self.widg_freq)
+
+        self.widg_timer = QWidget(self.widg_runctrl)
+        self.lay_timer = QHBoxLayout(self.widg_timer)
         
         self.btn_step = QPushButton('Step')
         self.btn_run = QPushButton('Run')
@@ -220,8 +223,8 @@ class MainWindow(QMainWindow):
         self.txtbox_brk = QLineEdit("-")
         self.txtbox_freq = QLineEdit("4.0")
         self.btn_setbrk = QPushButton('Set')
-        self.btn_setfreq = QPushButton('Set')
-        self.lbl_timer = QLabel("0us")
+        self.lbl_timer = QLabel("Laufzeit: 0µs")
+        self.lbl_freq = QLabel("Frequenz in MHz:")
 
         
         self.btn_step.clicked.connect(self.btn_step_method)
@@ -229,22 +232,29 @@ class MainWindow(QMainWindow):
         self.btn_stop.clicked.connect(self.stop)
         
         self.lay_runctrl.addWidget(self.btn_step)
+        self.btn_step.move(20, 20)
         self.lay_runctrl.addWidget(self.btn_run)
         self.lay_runctrl.addWidget(self.btn_stop)
         self.lay_runctrl.addWidget(self.btn_reset)
         
         self.lay_brk.addWidget(self.txtbox_brk)
         self.lay_brk.addWidget(self.btn_setbrk)
+        self.widg_brk.setMaximumHeight(40)
         
+        self.lay_freq.addWidget(self.lbl_freq)
         self.lay_freq.addWidget(self.txtbox_freq)
-        self.lay_freq.addWidget(self.btn_setfreq)
+        self.widg_freq.setMaximumHeight(40)
+
+        self.lay_timer.addWidget(self.lbl_timer)
+        self.widg_timer.setMaximumHeight(40)
         
         self.lay_runctrl.addWidget(self.widg_brk)
         self.lay_runctrl.addWidget(self.widg_freq)
+        self.lay_runctrl.addWidget(self.widg_timer)
         
-        self.lay_runctrl.addWidget(self.lbl_timer)
-        
+        # self.widg_runctrl.setStyleSheet("QWidget { border: 1px solid black; }")
         self.widg_runctrl.setFixedWidth(200)
+        self.widg_runctrl.setMaximumHeight(300)
         
         #menubar
         menubar = QMenuBar(self)
@@ -350,10 +360,12 @@ class MainWindow(QMainWindow):
         self.sig_update_input_mem.connect(self.p.update_table_input_mem)
         self.sig_run.connect(self.p.run_instructions)
         self.p.sig_continue.connect(self.continue_run)
+        self.p.sig_runtime.connect(self.set_runtime)
         self.p.update_mem()
         self.p_thread = QThread()
         self.p.moveToThread(self.p_thread)
         self.p_thread.start()
+        self.lbl_timer.setText("Laufzeit: 0µs")
 
     def show_Code(self, file):
         if self.code_lbls:
@@ -403,3 +415,7 @@ class MainWindow(QMainWindow):
     @pyqtSlot(bool)
     def continue_run(self):
         self.sig_run.emit(self._running)
+    
+    @pyqtSlot(int)
+    def set_runtime(self, cycles):
+        self.lbl_timer.setText(f"Laufzeit: {round(cycles/float(self.txtbox_freq.text()), 3)*4}µs")
