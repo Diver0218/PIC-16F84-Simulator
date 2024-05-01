@@ -373,6 +373,11 @@ class Processor(QObject):
 #endregion
             
     def handle_Timer0(self, cycles):
+        if cycles == -1:
+            self.Vorteiler_count += 1
+            if self.Vorteiler_count >= self.Vorteiler:
+                self.mem.increment_timer0()
+                self.Vorteiler_count %= self.Vorteiler
         if self.Timer0_changed > 0:
             self.Timer0_changed -= 1
             return
@@ -382,9 +387,10 @@ class Processor(QObject):
             if self.Vorteiler_count >= self.Vorteiler:
                 self.mem.increment_timer0()
                 self.Vorteiler_count %= self.Vorteiler
-            if self.mem.get_bank_specific_register(1, 0).value > 0xFF:
-                 self.mem.eeprom[0][1].set(0)
+        if self.mem.get_bank_specific_register(1, 0).value > 0xFF:
+                self.mem.eeprom[0][1].set(0)
                 # interrupt
+            
           
 #region signals
                     
@@ -438,6 +444,8 @@ class Processor(QObject):
     @pyqtSlot(list)
     def update_single_register_bit(self, update):
         self.mem[update[0]].set_bit(update[1], update[2])
+        if update == [5, 4, 1] and self.mem.get_bank_specific_register(1, 1).test_bit(5):
+            self.handle_Timer0(-1)
         self.update_mem()
         
     @pyqtSlot(list)
