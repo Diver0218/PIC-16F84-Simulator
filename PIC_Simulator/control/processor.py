@@ -385,6 +385,31 @@ class Processor(QObject):
             if self.mem.get_bank_specific_register(1, 0).value > 0xFF:
                 self.mem[1].set(0)
                 self.mem[0xB].set_bit(2, 1)
+    
+    def handle_interrupts(self):
+        intcon = self.mem[0xB]
+        if intcon.test_bit(7):
+            if (intcon.test_bit(5) and intcon.test_bit(2)) or (intcon.test_bit(4) and intcon.test_bit(1)) or (intcon.test_bit(3) and intcon.test_bit(0)):
+                intcon.set_bit(7, 0)
+                self.mem.push_pc()
+                self.mem.set_pc(0x4)
+
+    def set_interrupt_flags(self, old_rb:Register):
+        intcon = self.mem[0xB]
+        option = self.mem.get_bank_specific_register(1, 1)
+        if option.test_bit(6) and not old_rb.test_bit(0) and self.mem[6].test_bit(0):
+            intcon.set_bit(1, 1)
+        elif not option.test_bit(6) and old_rb.test_bit(0) and not self.mem[6].test_bit(0):
+            intcon.set_bit(1, 1)
+        
+        changed_bit = (old_rb.value & 0b11110000) ^ (self.mem[6].value & 0b11110000)
+        index = 0
+        while changed_bit > 1:
+            index += 1
+            changed_bit = changed_bit >> 1
+        
+        if self.mem.get_bank_specific_register(6, 1).test_bit(index) and changed_bit:
+            intcon.set_bit(0, 1)
           
 #region signals
                     
@@ -440,31 +465,6 @@ class Processor(QObject):
         self.update_quartz()
         self.update_inst(self.inst)
         self.update_pc()
-    
-    def handle_interrupts(self):
-        intcon = self.mem[0xB]
-        if intcon.test_bit(7):
-            if (intcon.test_bit(5) and intcon.test_bit(2)) or (intcon.test_bit(4) and intcon.test_bit(1)) or (intcon.test_bit(3) and intcon.test_bit(0)):
-                intcon.set_bit(7, 0)
-                self.mem.push_pc()
-                self.mem.set_pc(0x4)
-
-    def set_interrupt_flags(self, old_rb:Register):
-        intcon = self.mem[0xB]
-        option = self.mem.get_bank_specific_register(1, 1)
-        if option.test_bit(6) and not old_rb.test_bit(0) and self.mem[6].test_bit(0):
-            intcon.set_bit(1, 1)
-        elif not option.test_bit(6) and old_rb.test_bit(0) and not self.mem[6].test_bit(0):
-            intcon.set_bit(1, 1)
-        
-        changed_bit = (old_rb.value & 0b11110000) ^ (self.mem[6].value & 0b11110000)
-        index = 0
-        while changed_bit > 1:
-            index += 1
-            changed_bit = changed_bit >> 1
-        
-        if self.mem.get_bank_specific_register(6, 1).test_bit(index) and changed_bit:
-            intcon.set_bit(0, 1)
             
     @pyqtSlot(list)
     def update_single_register_bit(self, update):
