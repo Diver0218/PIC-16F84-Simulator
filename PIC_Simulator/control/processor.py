@@ -231,9 +231,9 @@ class Processor(QObject):
         self.inc_cycle()
     
     def retfie(self):
-        self.mem.inc_ciycle(2)
+        self.inc_cycle(2)
         self.mem[0xB].set_bit(7, 1)
-        self.mem.pop_pc()
+        self.mem.set_pc(self.mem.pop_pc())
     
     def retlw(self, k):
         self.W.set(k)
@@ -459,7 +459,7 @@ class Processor(QObject):
         
         changed_bit = (old_rb.value & 0b11110000) ^ (self.mem[6].value & 0b11110000)
         index = 0
-        while changed_bit < 1:
+        while changed_bit > 1:
             index += 1
             changed_bit = changed_bit >> 1
         
