@@ -1,6 +1,7 @@
 from .registers import Register
+from PyQt6.QtCore import pyqtSignal, QObject
 
-class Memory():
+class Memory(QObject):
 
     # Bank 0
     # INDF : Register
@@ -21,14 +22,16 @@ class Memory():
     # TRISB : Register
     # EECON1 : Register
     # EECON2 : Register
+    
+    sig_timer0_set = pyqtSignal(bool)
 
     def __init__(self):
+        super().__init__()
         self.eeprom = [[Register(0) for _ in range(80)] for _ in range(2)]
         self.stackpointer : int = 0
         self.stack : list[int] = [int(0) for _ in range(8)] 
         self.pc : int = 0   
         self.bank_relevant_adr = [0x01, 0x05, 0x06, 0x08, 0x09]
-        self.cycle : int = 0
 
     def __str__(self):
         retValue = ""
@@ -40,6 +43,8 @@ class Memory():
     
     def __setitem__(self, index, value):
         tuple_index = self._handle_index(index)
+        if tuple_index == [1, 0]:
+            self.sig_timer0_set.emit(True)
         if (self.eeprom[0][3].test_bit(5) and index in self.bank_relevant_adr) or tuple_index[1]:
             self.eeprom[1][tuple_index[0]].set(value)
         else:
@@ -73,11 +78,7 @@ class Memory():
                     
     def inc_pc(self, amount : int = 1):
         self.pc += amount
-        self.cycle += 1
         print(f"PC: {self.pc}")
-        
-    def inc_ciycle(self, amount = 1):
-        self.cycle += amount
 
     def set_pc(self, pc):
         self.pc = pc
@@ -104,3 +105,6 @@ class Memory():
             item.set(0)
         for item in self.bank_relevant_adr:
             self.eeprom[1][item].set(0)
+            
+    def increment_timer0(self):
+        self.eeprom[0][1].value += 1
