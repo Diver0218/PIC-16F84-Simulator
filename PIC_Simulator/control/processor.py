@@ -389,7 +389,10 @@ class Processor(QObject):
         if self.Timer0_changed > 0:
             self.Timer0_changed -= 1
             return
-        self.Vorteiler = pow(2, (self.mem.get_bank_specific_register(1, 1).value & 0x07) + 1)
+        if not self.mem.get_bank_specific_register(1, 1).test_bit(3):
+            self.Vorteiler = pow(2, (self.mem.get_bank_specific_register(1, 1).value & 0x07) + 1)
+        else:
+            self.Vorteiler = 1
         if not self.mem.get_bank_specific_register(1, 1).test_bit(5):           
             self.Vorteiler_count += cycles
             if self.Vorteiler_count >= self.Vorteiler:
@@ -411,7 +414,11 @@ class Processor(QObject):
         if self.Watchdog_enabled:
             self.Watchdog_Timer += (cycles/float(self.quartz))*4
             self.sig_Watchdog_Timer.emit(self.Watchdog_Timer)
-            if self.Watchdog_Timer >= 18 * pow(2, self.mem.get_bank_specific_register(1, 1).value & 0x07):
+            if self.mem.get_bank_specific_register(1, 1).test_bit(3):
+                overflow = 18 * pow(2, self.mem.get_bank_specific_register(1, 1).value & 0x07)
+            else:
+                overflow = 18
+            if self.Watchdog_Timer >= overflow:
                 #Watchdog Timer Interrupt
                 pass
 
@@ -458,6 +465,7 @@ class Processor(QObject):
     @pyqtSlot(bool)
     def handle_Timer0_changed(self, signal):
         self.Timer0_changed = 2
+        self.Vorteiler_count = 0
             
     @pyqtSlot(bool)
     def handle_pclath(self):
