@@ -111,6 +111,7 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.lst = Listing("")
         self._running = False
+        self.setWindowTitle("PIC-16F84 Simulator")
 
     def create_window(self): 
 ##########################
