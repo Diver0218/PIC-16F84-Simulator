@@ -1,11 +1,9 @@
 from PyQt6.QtWidgets import QWidget, QListWidget, QListWidgetItem, QLabel, QVBoxLayout, QHBoxLayout, QPushButton, QTableWidget, QTableWidgetItem, QMenuBar, QMenu, QMainWindow, QLayout, QFileDialog, QHeaderView, QCheckBox
 from PyQt6.QtWidgets import QLineEdit
-from PyQt6.QtCore import QRect
-import sys
 from PyQt6.QtCore import QThread, pyqtSignal, pyqtSlot, Qt
+from PyQt6.QtGui import QColor
 from control.processor import Processor
 from lst_parser_bits import Listing
-from pathlib import Path
 from model.memory import Memory
 #debug
 from PyQt6.QtWidgets import QDialog
@@ -97,6 +95,7 @@ class MainWindow(QMainWindow):
     code_lbls = []
     sig_frequenz = pyqtSignal(float)
     sig_wd_enabled = pyqtSignal(bool)
+    breakpoints = []
 
     def __init__(self):
         super().__init__()
@@ -201,7 +200,7 @@ class MainWindow(QMainWindow):
         self.widg_code = QWidget(self.widg_main)
         self.lay_code = QVBoxLayout(self.widg_code)
         self.list_code = QListWidget()
-        # self.lbl_code = QLabel("lskdugaldkgjsdlgkjbasdjgkbsdjgdfgdGSDGsdds\nwefwefewfwefwefwefWEFWefWEGWegewG\n hfgduzsgkeriugziebsztieruztvgerzuvteuzteriuvziguzrgiuzrgkazgrzaergkzeragkreuz")
+        self.list_code.itemDoubleClicked.connect(self.toggle_breakpoint)
 
         self.lay_code.addWidget(self.list_code)
         
@@ -385,6 +384,7 @@ class MainWindow(QMainWindow):
         self.p.moveToThread(self.p_thread)
         self.p_thread.start()
         self.lbl_timer.setText("Laufzeit: 0µs")
+        self.breakpoints = []
 
     def show_Code(self, file):
         if self.code_lbls:
@@ -433,6 +433,8 @@ class MainWindow(QMainWindow):
     
     @pyqtSlot(bool)
     def continue_run(self):
+        if self.p.mem.pc in self.breakpoints:
+            self.stop()
         self.sig_run.emit(self._running)
     
     @pyqtSlot(int)
@@ -450,3 +452,13 @@ class MainWindow(QMainWindow):
     @pyqtSlot(str)
     def send_freq(self):
         self.sig_frequenz.emit(float(self.txtbox_freq.text()))
+
+    @pyqtSlot(QListWidgetItem)
+    def toggle_breakpoint(self, item:QListWidgetItem):
+        entry = next(entry for entry in self.code_lbls if entry['label'] == item)
+        if item.foreground().color() == QColor("red"):
+            item.setForeground(QColor("black"))
+            self.breakpoints.remove(entry['pc'])
+        else:
+            item.setForeground(QColor("red"))
+            self.breakpoints.append(entry["pc"])
