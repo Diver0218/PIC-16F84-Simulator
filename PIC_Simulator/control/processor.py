@@ -504,6 +504,10 @@ class Processor(QObject):
     def set_startup_variables(self):
         self.mem.reset()
         self.update_mem()
+        
+    @pyqtSlot(float)
+    def set_quartz(self, value):
+        self.quartz = value
 
 #endregion
            

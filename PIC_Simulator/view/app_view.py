@@ -95,6 +95,7 @@ class MainWindow(QMainWindow):
     is_set_data = True
     sig_run = pyqtSignal(bool)
     code_lbls = []
+    sig_frequenz = pyqtSignal(float)
 
     def __init__(self):
         super().__init__()
@@ -231,6 +232,8 @@ class MainWindow(QMainWindow):
         self.btn_run.clicked.connect(self.run)
         self.btn_stop.clicked.connect(self.stop)
         
+        self.txtbox_freq.textChanged.connect(self.sig_frequenz.emit)
+        
         self.lay_runctrl.addWidget(self.btn_step)
         self.btn_step.move(20, 20)
         self.lay_runctrl.addWidget(self.btn_run)
@@ -361,6 +364,7 @@ class MainWindow(QMainWindow):
         self.sig_run.connect(self.p.run_instructions)
         self.p.sig_continue.connect(self.continue_run)
         self.p.sig_runtime.connect(self.set_runtime)
+        self.sig_frequenz.connect(self.p.set_freq)
         self.p.update_mem()
         self.p_thread = QThread()
         self.p.moveToThread(self.p_thread)
