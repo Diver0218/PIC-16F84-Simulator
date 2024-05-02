@@ -1,8 +1,14 @@
-class Register():
+from PyQt6.QtCore import QObject, pyqtSignal
+class Register(QObject):
 
     value : int
+    sig_data_latch = pyqtSignal(object)
 
-    def __init__(self, value=0x00):
+    def __init__(self, value=0x00, parent = None):
+        super().__init__()
+        self.parent = parent
+        if parent:
+            self.sig_data_latch.connect(parent.set_data_latch)
         self.set(value)
 
     def set(self, value):
@@ -12,6 +18,8 @@ class Register():
             self.value = value.value
         else:
             raise TypeError("Unsupported Type for 'set' method")
+        if self.parent:
+            self.sig_data_latch.emit(self)
     
     def increment(self):
         retval = self.value + 1
@@ -72,6 +80,8 @@ class Register():
         self &= ~mask
         if value:
             self |= mask
+        if self.parent:
+            self.sig_data_latch.emit(self)
 
     def test_bit(self, index):
         return (self & (1 << index)).value >> index
@@ -153,7 +163,8 @@ class Register():
     
 class W_Register(Register):
 
-    def __init__(self, value):
+    def __init__(self, value, parent = None):
+        self.parent = parent
         if isinstance(value, Register):
             self.set(value.value)
         elif isinstance(value, int):

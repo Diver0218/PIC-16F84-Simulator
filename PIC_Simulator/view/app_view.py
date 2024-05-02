@@ -12,6 +12,7 @@ from PyQt6 import QtGui
 
 class MemTable(QTableWidget):
     sig_update_bit = pyqtSignal(list)
+    toggled = False
 
     def __init__(self, rows, columns, parent):
         QTableWidget.__init__(self, rows, columns, parent)
@@ -38,19 +39,27 @@ class MemTable(QTableWidget):
         self.setVerticalHeaderLabels(verticaHeaders)
 
     
-    def setPortData(self, mem, adr):
+    def setPortData(self, mem:Memory, adr):
         columns = self.columnCount()
-        for i in range(columns):
-            tbl_button = TblPortButton(adr, 7-i, self)
-            tbl_button.setText(str(mem.get_bank_specific_register(adr, 0).test_bit(7 - i)))
-            self.setCellWidget(2, i, tbl_button)
         for i in range(columns):
             item = mem.get_bank_specific_register(adr, 1).test_bit(7 - i)
             self.setItem(0, i, QTableWidgetItem(str(item))) # evtl hier auch ToggleButton einfügen
+            tbl_button = TblPortButton(adr, 7-i, self)
             if item:
                 self.setItem(1, i, QTableWidgetItem('i'))
             else:
                 self.setItem(1, i, QTableWidgetItem('o'))
+                tbl_button.setText(str(mem.data_latch[adr-5][7-i]))
+                self.setCellWidget(2, i, tbl_button)    
+            if self.toggled:
+                tbl_button.setText(str(mem.data_latch[adr-5][7-i]))
+                self.setCellWidget(2, i, tbl_button)    
+        for i in range(columns):
+            if not self.cellWidget(2, i):
+                tbl_button = TblPortButton(adr, 7-i, self)
+                self.setCellWidget(2, i, tbl_button)    
+                self.cellWidget(2, i).setText('0')
+        self.toggled = False
 
     def resizePorts(self):
         self.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
@@ -58,6 +67,7 @@ class MemTable(QTableWidget):
     
     @pyqtSlot(list)
     def signal_update_bit(self, update):
+        self.toggled = True
         self.sig_update_bit.emit(update)
             
 class TblPortButton(QPushButton):
@@ -72,7 +82,7 @@ class TblPortButton(QPushButton):
         self.sig_update_bit.connect(parent.signal_update_bit)
         self.clicked.connect(self.toggleButton)
         
-    def toggleButton(self): #Muss noch mit Memory verbunden werden
+    def toggleButton(self):
         update = [self.port, self.bit]
         if self.text() == '1':
             self.setText('0')
@@ -154,10 +164,10 @@ class MainWindow(QMainWindow):
         self.but_reg_reset.clicked.connect(self.reset_mem)
         
         self.tbl_porta.setHorizontalHeaderLabels(['RA 7','RA 6','RA 5','RA 4','RA 3','RA 2','RA 1','RA 0'])
-        self.tbl_porta.setVerticalHeaderLabels(['TRIS','i/o','RA'])
+        self.tbl_porta.setVerticalHeaderLabels(['TRIS','i/o','Pin'])
         self.tbl_porta.resizePorts()
         self.tbl_portb.setHorizontalHeaderLabels(['RB 7','RB 6','RB 5','RB 4','RB 3','RB 2','RB 1','RB 0'])
-        self.tbl_portb.setVerticalHeaderLabels(['TRIS','i/o','RB'])
+        self.tbl_portb.setVerticalHeaderLabels(['TRIS','i/o','Pin'])
         self.tbl_portb.resizePorts()
         self.tbl_mem.setHorizontalHeaderLabels(['Bit 7', 'Bit 6', 'Bit 5', 'Bit 4', 'Bit 3', 'Bit 2', 'Bit 1', 'Bit 0', 'Value'])
         self.tbl_mem.resizeColumnsToContents()

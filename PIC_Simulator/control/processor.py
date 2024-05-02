@@ -118,7 +118,7 @@ class Processor(QObject):
         return
     
     def clrf(self, f):
-        self.mem[f].set(0x00)
+        self.mem[f] = 0x00
         self.zero_flag(self.mem[f])
         self.mem.inc_pc()
         self.inc_cycle()
@@ -224,7 +224,7 @@ class Processor(QObject):
             self.W.set(self.mem[f])
             self.zero_flag(self.W)
         else:
-            self.mem[f].set(self.mem[f])
+            self.mem[f] = self.mem[f]
             self.zero_flag(self.mem[f])
         self.mem.inc_pc()
         self.inc_cycle()

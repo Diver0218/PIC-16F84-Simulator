@@ -1,5 +1,5 @@
 from .registers import Register
-from PyQt6.QtCore import pyqtSignal, QObject
+from PyQt6.QtCore import pyqtSignal, QObject, pyqtSlot
 import debugpy
 
 class Memory(QObject):
@@ -26,14 +26,17 @@ class Memory(QObject):
     
     sig_timer0_set = pyqtSignal(bool)
     sig_pclath = pyqtSignal(bool)
+    data_latch = [int(0) for _ in range(2)]
+    eeprom = [[Register(0) for _ in range(80)] for _ in range(2)]
 
     def __init__(self):
         super().__init__()
-        self.eeprom = [[Register(0) for _ in range(80)] for _ in range(2)]
+        self.eeprom = [[Register(0, self) for _ in range(80)] for _ in range(2)]
         self.stackpointer : int = 0
         self.stack : list[int] = [int(0) for _ in range(8)] 
         self.pc : int = 0   
         self.bank_relevant_adr = [0x01, 0x05, 0x06, 0x08, 0x09]
+        self.data_latch = [[int(0) for _ in range(8)] for _ in range(2)]
         self.power_reset()
 
     def __str__(self):
@@ -54,6 +57,9 @@ class Memory(QObject):
             self.eeprom[0][tuple_index[0]].set(value)
         if tuple_index == [2, 0]:
             self.sig_pclath.emit(True) 
+        if tuple_index == [5, 0] or tuple_index == [6, 0]:
+            for i in range(8):
+                self.data_latch[tuple_index[0]-5][i] = self.eeprom[0][tuple_index[0]].test_bit(i)
 
     def __getitem__(self, index):
         tuple_index = self._handle_index(index)
@@ -130,3 +136,21 @@ class Memory(QObject):
         self[0x81].set(0b11111111)
         self[0x85].set(0b00011111)
         self[0x86].set(0b11111111)
+
+    @pyqtSlot(object)
+    def set_data_latch(self, reg):
+        reg_adr = self.compare_regs(reg)
+        if reg_adr[1] in [5, 6] and reg_adr[0] == 0:
+            for i in range(8):
+                self.data_latch[reg_adr[1]-5][i] = self.eeprom[0][reg_adr[1]].test_bit(i)
+    
+    def compare_regs(self, reg):
+        bank_index = 0
+        reg_index = 0
+        for bank in self.eeprom:
+            for regis in bank:
+                if regis is reg:
+                    return [bank_index, reg_index]
+                reg_index += 1
+            bank_index += 1
+        return [-1, -1]
