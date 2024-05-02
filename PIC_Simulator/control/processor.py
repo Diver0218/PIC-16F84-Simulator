@@ -411,7 +411,7 @@ class Processor(QObject):
         if self.Watchdog_enabled:
             self.Watchdog_Timer += (cycles/float(self.quartz))*4
             self.sig_Watchdog_Timer.emit(self.Watchdog_Timer)
-            if self.Watchdog_Timer >= pow(2, self.mem.get_bank_specific_register(1, 1).value & 0x07):
+            if self.Watchdog_Timer >= 18 * pow(2, self.mem.get_bank_specific_register(1, 1).value & 0x07):
                 #Watchdog Timer Interrupt
                 pass
 
