@@ -407,7 +407,7 @@ class Processor(QObject):
                 self.mem.push_pc()
                 self.mem.set_pc(0x4)
                 
-    def handle_watchdog(self, cycles):
+    def handle_Watchdog(self, cycles):
         if self.Watchdog_enabled:
             self.Watchdog_Timer += (cycles/float(self.quartz))*4
             self.sig_Watchdog_Timer.emit(self.Watchdog_Timer)
