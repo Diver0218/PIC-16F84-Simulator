@@ -487,7 +487,9 @@ class Processor(QObject):
         if update[0] == 6:
             tmp_rb = Register(0 if update[2] else 1)
         self.mem[update[0]].set_bit(update[1], update[2])
-        if update == [5, 4, 1] and self.mem.get_bank_specific_register(1, 1).test_bit(5):
+        if update == [5, 4, 1] and self.mem.get_bank_specific_register(1, 1).test_bit(5) and not self.mem.get_bank_specific_register(1, 1).test_bit(4):
+            self.handle_Timer0(-1)
+        if update == [5, 4, 0] and self.mem.get_bank_specific_register(1, 1).test_bit(5) and self.mem.get_bank_specific_register(1, 1).test_bit(4):
             self.handle_Timer0(-1)
         if update[0] == 6:
             self.set_interrupt_flags(tmp_rb)
