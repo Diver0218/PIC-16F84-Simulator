@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QWidget, QListWidget, QListWidgetItem, QLabel, QVBoxLayout, QHBoxLayout, QPushButton, QTableWidget, QTableWidgetItem, QMenuBar, QMenu, QMainWindow, QLayout, QFileDialog, QHeaderView
+from PyQt6.QtWidgets import QWidget, QListWidget, QListWidgetItem, QLabel, QVBoxLayout, QHBoxLayout, QPushButton, QTableWidget, QTableWidgetItem, QMenuBar, QMenu, QMainWindow, QLayout, QFileDialog, QHeaderView, QCheckBox
 from PyQt6.QtWidgets import QLineEdit
 from PyQt6.QtCore import QRect
 import sys
@@ -95,6 +95,8 @@ class MainWindow(QMainWindow):
     is_set_data = True
     sig_run = pyqtSignal(bool)
     code_lbls = []
+    sig_frequenz = pyqtSignal(float)
+    sig_wd_enabled = pyqtSignal(bool)
 
     def __init__(self):
         super().__init__()
@@ -216,6 +218,9 @@ class MainWindow(QMainWindow):
         self.widg_timer = QWidget(self.widg_runctrl)
         self.lay_timer = QHBoxLayout(self.widg_timer)
         
+        self.widg_wd_timer = QWidget(self.widg_runctrl)
+        self.lay_wd_timer = QVBoxLayout(self.widg_wd_timer)
+        
         self.btn_step = QPushButton('Step')
         self.btn_run = QPushButton('Run')
         self.btn_stop = QPushButton('Stop')
@@ -225,11 +230,16 @@ class MainWindow(QMainWindow):
         self.btn_setbrk = QPushButton('Set')
         self.lbl_timer = QLabel("Laufzeit: 0µs")
         self.lbl_freq = QLabel("Frequenz in MHz:")
+        self.chbx_wd_timer = QCheckBox("Watchdog Timer aktiviert")
+        self.lbl_wd_timer = QLabel("Watchdog Timer: 0µs")
 
         
         self.btn_step.clicked.connect(self.btn_step_method)
         self.btn_run.clicked.connect(self.run)
         self.btn_stop.clicked.connect(self.stop)
+        self.chbx_wd_timer.stateChanged.connect(self.change_wd_enable)
+        
+        self.txtbox_freq.textChanged.connect(self.send_freq)
         
         self.lay_runctrl.addWidget(self.btn_step)
         self.btn_step.move(20, 20)
@@ -248,13 +258,18 @@ class MainWindow(QMainWindow):
         self.lay_timer.addWidget(self.lbl_timer)
         self.widg_timer.setMaximumHeight(40)
         
+        self.lay_wd_timer.addWidget(self.chbx_wd_timer)
+        self.lay_wd_timer.addWidget(self.lbl_wd_timer)
+        self.widg_wd_timer.setMaximumHeight(60)
+        
         self.lay_runctrl.addWidget(self.widg_brk)
         self.lay_runctrl.addWidget(self.widg_freq)
         self.lay_runctrl.addWidget(self.widg_timer)
+        self.lay_runctrl.addWidget(self.widg_wd_timer)
         
         # self.widg_runctrl.setStyleSheet("QWidget { border: 1px solid black; }")
         self.widg_runctrl.setFixedWidth(200)
-        self.widg_runctrl.setMaximumHeight(300)
+        self.widg_runctrl.setMaximumHeight(330)
         
         #menubar
         menubar = QMenuBar(self)
@@ -361,6 +376,10 @@ class MainWindow(QMainWindow):
         self.sig_run.connect(self.p.run_instructions)
         self.p.sig_continue.connect(self.continue_run)
         self.p.sig_runtime.connect(self.set_runtime)
+        self.sig_frequenz.connect(self.p.set_freq)
+        self.sig_wd_enabled.connect(self.p.set_wd_enabled)
+        self.p.sig_Watchdog_Timer.connect(self.set_wd_timer_text)
+        self.sig_frequenz.emit(float(self.txtbox_freq.text()))
         self.p.update_mem()
         self.p_thread = QThread()
         self.p.moveToThread(self.p_thread)
@@ -419,3 +438,15 @@ class MainWindow(QMainWindow):
     @pyqtSlot(int)
     def set_runtime(self, cycles):
         self.lbl_timer.setText(f"Laufzeit: {round(cycles/float(self.txtbox_freq.text()), 3)*4}µs")
+     
+    @pyqtSlot(int)   
+    def change_wd_enable(self):
+        self.sig_wd_enabled.emit(self.chbx_wd_timer.isChecked())
+        
+    @pyqtSlot(float)
+    def set_wd_timer_text(self, time:float):
+        self.lbl_wd_timer.setText(f"Watchdog Timer: {round(time, 2)}µs")
+        
+    @pyqtSlot(str)
+    def send_freq(self):
+        self.sig_frequenz.emit(float(self.txtbox_freq.text()))

@@ -25,6 +25,7 @@ class Processor(QObject):
     sig_pc = pyqtSignal(int)
     sig_continue = pyqtSignal(bool)
     sig_runtime = pyqtSignal(int)
+    sig_Watchdog_Timer = pyqtSignal(float)
 
     def __init__(self, inst) -> None:
         super().__init__()
@@ -39,6 +40,8 @@ class Processor(QObject):
         self.mem.sig_pclath.connect(self.handle_pclath)
         self.Timer0_changed = 0
         self.inst_pcl_set = False
+        self.Watchdog_Timer:float = 0
+        self.Watchdog_enabled = False
         
         
     # def set_instructions(self, inst):
@@ -127,8 +130,8 @@ class Processor(QObject):
         self.inc_cycle()
 
     def clrwdt(self):
-        #clear watch dog timer Routine
-        return
+        self.Watchdog_Timer = 0
+        self.inc_cycle()
     
     def comf(self, f, d = 0):
         if d == 0:
@@ -403,6 +406,14 @@ class Processor(QObject):
                 intcon.set_bit(7, 0)
                 self.mem.push_pc()
                 self.mem.set_pc(0x4)
+                
+    def handle_Watchdog(self, cycles):
+        if self.Watchdog_enabled:
+            self.Watchdog_Timer += (cycles/float(self.quartz))*4
+            self.sig_Watchdog_Timer.emit(self.Watchdog_Timer)
+            if self.Watchdog_Timer >= 18 * pow(2, self.mem.get_bank_specific_register(1, 1).value & 0x07):
+                #Watchdog Timer Interrupt
+                pass
 
     def set_interrupt_flags(self, old_rb:Register):
         intcon = self.mem[0xB]
@@ -421,6 +432,12 @@ class Processor(QObject):
         if self.mem.get_bank_specific_register(6, 1).test_bit(index) and changed_bit:
             intcon.set_bit(0, 1)
           
+    def inc_cycle(self, amount = 1):
+        self.cycle += amount
+        self.handle_Watchdog(amount)
+        self.sig_runtime.emit(self.cycle)
+        self.handle_Timer0(amount)
+        
 #region signals
                     
     def update_mem(self):
@@ -436,13 +453,7 @@ class Processor(QObject):
         self.sig_pc.emit(self.mem.pc)
         
     def update_pc(self):
-        self.sig_pc.emit(self.mem.pc)
-            
-    def inc_cycle(self, amount = 1):
-        self.cycle += amount
-        self.sig_runtime.emit(self.cycle)
-        self.handle_Timer0(amount)
-        
+        self.sig_pc.emit(self.mem.pc)    
             
     @pyqtSlot(bool)
     def handle_Timer0_changed(self, signal):
@@ -487,7 +498,9 @@ class Processor(QObject):
         if update[0] == 6:
             tmp_rb = Register(0 if update[2] else 1)
         self.mem[update[0]].set_bit(update[1], update[2])
-        if update == [5, 4, 1] and self.mem.get_bank_specific_register(1, 1).test_bit(5):
+        if update == [5, 4, 1] and self.mem.get_bank_specific_register(1, 1).test_bit(5) and not self.mem.get_bank_specific_register(1, 1).test_bit(4):
+            self.handle_Timer0(-1)
+        if update == [5, 4, 0] and self.mem.get_bank_specific_register(1, 1).test_bit(5) and self.mem.get_bank_specific_register(1, 1).test_bit(4):
             self.handle_Timer0(-1)
         if update[0] == 6:
             self.set_interrupt_flags(tmp_rb)
@@ -502,6 +515,14 @@ class Processor(QObject):
     def set_startup_variables(self):
         self.mem.reset()
         self.update_mem()
+        
+    @pyqtSlot(float)
+    def set_freq(self, value):
+        self.quartz = value
+        
+    @pyqtSlot(bool)
+    def set_wd_enabled(self, value):
+        self.Watchdog_enabled = value
 
 #endregion
            
