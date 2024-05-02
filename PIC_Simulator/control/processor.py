@@ -130,8 +130,8 @@ class Processor(QObject):
         self.inc_cycle()
 
     def clrwdt(self):
-        #clear watch dog timer Routine
-        return
+        self.Watchdog_Timer = 0
+        self.inc_cycle()
     
     def comf(self, f, d = 0):
         if d == 0:
