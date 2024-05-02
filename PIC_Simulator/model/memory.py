@@ -113,6 +113,7 @@ class Memory(QObject):
         for item in self.eeprom[0][0xc:]:
             item.set(0)
         self[2].set(0)
+        self.pc = 0
         self[3] = self[3] & 0b00011111
         self[0xA].set(0)
         self[0xB] = self[0xB] & 0b00000001
