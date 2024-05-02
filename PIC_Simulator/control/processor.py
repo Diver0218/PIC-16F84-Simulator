@@ -406,6 +406,14 @@ class Processor(QObject):
                 intcon.set_bit(7, 0)
                 self.mem.push_pc()
                 self.mem.set_pc(0x4)
+                
+    def handle_watchdog(self, cycles):
+        if self.Watchdog_enabled:
+            self.Watchdog_Timer += (cycles/float(self.quartz))*4
+            self.sig_Watchdog_Timer.emit(self.Watchdog_Timer)
+            if self.Watchdog_Timer >= pow(2, self.mem.get_bank_specific_register(1, 1).value & 0x07):
+                #Watchdog Timer Interrupt
+                pass
 
     def set_interrupt_flags(self, old_rb:Register):
         intcon = self.mem[0xB]
@@ -426,12 +434,7 @@ class Processor(QObject):
           
     def inc_cycle(self, amount = 1):
         self.cycle += amount
-        if self.Watchdog_enabled:
-            self.Watchdog_Timer += (amount/float(self.quartz))*4
-            self.sig_Watchdog_Timer.emit(self.Watchdog_Timer)
-            if self.Watchdog_Timer >= pow(2, self.mem.get_bank_specific_register(1, 1).value & 0x07):
-                #Watchdog Timer Interrupt
-                pass
+        self.handle_Watchdog(amount)
         self.sig_runtime.emit(self.cycle)
         self.handle_Timer0(amount)
         
