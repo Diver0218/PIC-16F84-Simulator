@@ -1,5 +1,6 @@
 from .registers import Register
 from PyQt6.QtCore import pyqtSignal, QObject
+import debugpy
 
 class Memory(QObject):
 
@@ -108,7 +109,8 @@ class Memory(QObject):
         return retAdr
     
     def reset(self):
-        for item in self.eeprom[0xc:]:
+        debugpy.debug_this_thread()
+        for item in self.eeprom[0][0xc:]:
             item.set(0)
         self[2].set(0)
         self[3] = self[3] & 0b00011111
