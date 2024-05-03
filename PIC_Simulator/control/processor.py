@@ -281,7 +281,11 @@ class Processor(QObject):
         self.inc_cycle()
 
     def sleep(self):
-        # Sleep Routine
+        if self.mem[3].test_bit(3):
+            self.Watchdog_Timer = 0
+        if not self.mem[3].test_bit(3):
+            self.inc_cycle()
+        self.mem[3] = (self.mem[3] & 0b11100111) | 0b00010000
         return
     
     def sublw(self, k):
