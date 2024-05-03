@@ -114,7 +114,7 @@ class Memory(QObject):
             retAdr = self.stack[self.stackpointer]
         return retAdr
     
-    def reset(self):
+    def reset(self, type:str):
         debugpy.debug_this_thread()
         for item in self.eeprom[0][0xc:]:
             item.set(0)
@@ -132,10 +132,15 @@ class Memory(QObject):
         self.eeprom[0][1].value += 1
 
     def power_reset(self):
-        self[3].set(0b00011000)
-        self[0x81].set(0b11111111)
-        self[0x85].set(0b00011111)
-        self[0x86].set(0b11111111)
+        self.pc = 0
+        self[0x02] = 0
+        self[0x03] = (self[3] & 0b00000111) | 0b00011000
+        self[0x0A] = 0
+        self[0x0B] = self[0xB] & 0b00000001
+        self[0x81] = 0b11111111
+        self[0x85] = 0b00011111
+        self[0x86] = 0b11111111
+        self[0x88] = self[3] & 0b00001000
 
     @pyqtSlot(object)
     def set_data_latch(self, reg):
