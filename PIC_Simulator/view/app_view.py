@@ -231,7 +231,7 @@ class MainWindow(QMainWindow):
         self.btn_step = QPushButton('Step')
         self.btn_run = QPushButton('Run')
         self.btn_stop = QPushButton('Stop')
-        self.btn_reset = QPushButton('Reset')
+        self.btn_reset = QPushButton('Reset Timer')
         self.txtbox_brk = QLineEdit("-")
         self.txtbox_freq = QLineEdit("4.0")
         self.btn_setbrk = QPushButton('Set')
@@ -244,6 +244,7 @@ class MainWindow(QMainWindow):
         self.btn_step.clicked.connect(self.btn_step_method)
         self.btn_run.clicked.connect(self.run)
         self.btn_stop.clicked.connect(self.stop)
+        self.btn_reset.clicked.connect(self.reset_timer)
         self.chbx_wd_timer.stateChanged.connect(self.change_wd_enable)
         
         self.txtbox_freq.textChanged.connect(self.send_freq)
@@ -471,3 +472,8 @@ class MainWindow(QMainWindow):
         else:
             item.setForeground(QColor("red"))
             self.breakpoints.append(entry["pc"])
+
+    @pyqtSlot(bool)
+    def reset_timer(self):
+        self.p.cycle = 0
+        self.p.inc_cycle(0)
