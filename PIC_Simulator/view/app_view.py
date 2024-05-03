@@ -456,7 +456,10 @@ class MainWindow(QMainWindow):
         
     @pyqtSlot(str)
     def send_freq(self):
-        self.sig_frequenz.emit(float(self.txtbox_freq.text()))
+        if self.txtbox_freq.text() == "":
+            self.sig_frequenz.emit(0.0)
+        else:
+            self.sig_frequenz.emit(float(self.txtbox_freq.text()))
 
     @pyqtSlot(QListWidgetItem)
     def toggle_breakpoint(self, item:QListWidgetItem):
