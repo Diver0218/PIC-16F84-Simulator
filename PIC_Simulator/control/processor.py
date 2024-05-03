@@ -312,7 +312,10 @@ class Processor(QObject):
     def swapf(self, f, d = 0):
         higher = (self.mem[f].value & 0xF0) >> 4
         lower = self.mem[f].value & 0x0F
-        self.mem[f] = Register((lower << 4) + higher)
+        if d:
+            self.mem[f] = Register((lower << 4) + higher)
+        else:
+            self.W = W_Register((lower << 4) + higher)
         self.mem.inc_pc()
         self.inc_cycle()
     
