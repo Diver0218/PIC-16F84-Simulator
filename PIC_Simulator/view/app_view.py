@@ -161,7 +161,7 @@ class MainWindow(QMainWindow):
         self.lbl_option = QLabel(self.widg_sfr_etc)
         self.lbl_intcon = QLabel(self.widg_sfr_etc)
 
-        self.but_reg_reset.setText("Reset Register")
+        self.but_reg_reset.setText("Reset (MCLR)")
         self.but_reg_reset.clicked.connect(self.reset_mem)
         
         self.tbl_porta.setHorizontalHeaderLabels(['RA 7','RA 6','RA 5','RA 4','RA 3','RA 2','RA 1','RA 0'])
@@ -373,7 +373,7 @@ class MainWindow(QMainWindow):
         self.p.sig_pc.connect(self.highlight_instruction)
         self.sig_init.connect(self.p.init_view)
         self.sig_update_register_bit.connect(self.p.update_single_register_bit)
-        self.sig_reset_mem.connect(self.p.set_startup_variables)
+        self.sig_reset_mem.connect(self.p.mclr_reset)
         self.sig_update_input_mem.connect(self.p.update_table_input_mem)
         self.sig_run.connect(self.p.run_instructions)
         self.p.sig_continue.connect(self.continue_run)

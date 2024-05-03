@@ -419,8 +419,7 @@ class Processor(QObject):
             else:
                 overflow = 18
             if self.Watchdog_Timer >= overflow:
-                #Watchdog Timer Interrupt
-                pass
+                self.mem.reset("WDT")
 
     def set_interrupt_flags(self, old_rb:Register):
         intcon = self.mem[0xB]
@@ -476,7 +475,6 @@ class Processor(QObject):
     def run_instructions(self, signal):
         if signal:
             self.step()
-            # time.sleep(0.1)
             self.sig_continue.emit(True)
             
         
@@ -520,8 +518,8 @@ class Processor(QObject):
         self.update_mem()
     
     @pyqtSlot(bool)
-    def set_startup_variables(self):
-        self.mem.reset()
+    def mclr_reset(self):
+        self.mem.reset("MCLR")
         self.update_mem()
         
     @pyqtSlot(float)
