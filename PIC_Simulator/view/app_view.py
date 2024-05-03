@@ -387,6 +387,8 @@ class MainWindow(QMainWindow):
         self.p.moveToThread(self.p_thread)
         self.p_thread.start()
         self.lbl_timer.setText("Laufzeit: 0µs")
+        self.lbl_wd_timer.setText(f"Watchdog Timer: 0µs")
+        self.change_wd_enable()
         self.breakpoints = []
 
     def show_Code(self, file):
