@@ -465,10 +465,7 @@ class Processor(QObject):
         self.sig_inst.emit(self.inst)
     
     def update_pc(self):
-        self.sig_pc.emit(self.mem.pc)
-        
-    def update_pc(self):
-        self.sig_pc.emit(self.mem.pc)    
+        self.sig_pc.emit(self.mem.pc) 
             
     @pyqtSlot(bool)
     def handle_Timer0_changed(self, signal):
@@ -528,8 +525,10 @@ class Processor(QObject):
     
     @pyqtSlot(bool)
     def mclr_reset(self):
+        debugpy.debug_this_thread()
         self.mem.reset("MCLR")
         self.update_mem()
+        self.update_pc()
         
     @pyqtSlot(float)
     def set_freq(self, value):
