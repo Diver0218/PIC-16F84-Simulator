@@ -418,8 +418,9 @@ class Processor(QObject):
     def handle_interrupts(self):
         intcon = self.mem[0xB]
         if (intcon.test_bit(5) and intcon.test_bit(2)) or (intcon.test_bit(4) and intcon.test_bit(1)) or (intcon.test_bit(3) and intcon.test_bit(0)):
-            if not self.mem[3].test_bit(3):
+            if self.is_asleep:
                 self.mem.wake_reset("INT")
+                self.is_asleep = False
             if intcon.test_bit(7):
                 intcon.set_bit(7, 0)
                 self.mem.push_pc()
