@@ -281,11 +281,9 @@ class Processor(QObject):
         self.inc_cycle()
 
     def sleep(self):
+        self.inc_cycle()
         if self.mem[3].test_bit(3):
             self.Watchdog_Timer = 0
-            self.mem[0x81] = self.mem[3] & 0b11111000
-        if not self.mem[3].test_bit(3):
-            self.inc_cycle()
         self.mem[3] = (self.mem[3] & 0b11100111) | 0b00010000
         return
     
@@ -422,9 +420,9 @@ class Processor(QObject):
             self.Watchdog_Timer += (cycles/float(self.quartz))*4
             self.sig_Watchdog_Timer.emit(self.Watchdog_Timer)
             if self.mem.get_bank_specific_register(1, 1).test_bit(3):
-                overflow = 18 * pow(2, self.mem.get_bank_specific_register(1, 1).value & 0x07)
+                overflow = 18000 * pow(2, self.mem.get_bank_specific_register(1, 1).value & 0x07)
             else:
-                overflow = 18
+                overflow = 18000
             if self.Watchdog_Timer >= overflow:
                 if self.mem[3].test_bit(3):
                     self.mem.reset("WDT")
