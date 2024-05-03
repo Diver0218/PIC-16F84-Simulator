@@ -219,9 +219,6 @@ class MainWindow(QMainWindow):
         self.widg_runctrl = QWidget(self.widg_main)
         self.lay_runctrl = QVBoxLayout(self.widg_runctrl)
         
-        self.widg_brk = QWidget(self.widg_runctrl)
-        self.lay_brk = QHBoxLayout(self.widg_brk)
-        
         self.widg_freq = QWidget(self.widg_runctrl)
         self.lay_freq = QHBoxLayout(self.widg_freq)
 
@@ -257,10 +254,6 @@ class MainWindow(QMainWindow):
         self.lay_runctrl.addWidget(self.btn_stop)
         self.lay_runctrl.addWidget(self.btn_reset)
         
-        self.lay_brk.addWidget(self.txtbox_brk)
-        self.lay_brk.addWidget(self.btn_setbrk)
-        self.widg_brk.setMaximumHeight(40)
-        
         self.lay_freq.addWidget(self.lbl_freq)
         self.lay_freq.addWidget(self.txtbox_freq)
         self.widg_freq.setMaximumHeight(40)
@@ -272,7 +265,6 @@ class MainWindow(QMainWindow):
         self.lay_wd_timer.addWidget(self.lbl_wd_timer)
         self.widg_wd_timer.setMaximumHeight(60)
         
-        self.lay_runctrl.addWidget(self.widg_brk)
         self.lay_runctrl.addWidget(self.widg_freq)
         self.lay_runctrl.addWidget(self.widg_timer)
         self.lay_runctrl.addWidget(self.widg_wd_timer)
