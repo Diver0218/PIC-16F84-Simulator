@@ -408,8 +408,10 @@ class Processor(QObject):
     
     def handle_interrupts(self):
         intcon = self.mem[0xB]
-        if intcon.test_bit(7):
-            if (intcon.test_bit(5) and intcon.test_bit(2)) or (intcon.test_bit(4) and intcon.test_bit(1)) or (intcon.test_bit(3) and intcon.test_bit(0)):
+        if (intcon.test_bit(5) and intcon.test_bit(2)) or (intcon.test_bit(4) and intcon.test_bit(1)) or (intcon.test_bit(3) and intcon.test_bit(0)):
+            if not self.mem[3].test_bit(3):
+                self.mem.wake_reset("INT")
+            if intcon.test_bit(7):
                 intcon.set_bit(7, 0)
                 self.mem.push_pc()
                 self.mem.set_pc(0x4)
@@ -423,7 +425,10 @@ class Processor(QObject):
             else:
                 overflow = 18
             if self.Watchdog_Timer >= overflow:
-                self.mem.reset("WDT")
+                if self.mem[3].test_bit(3):
+                    self.mem.reset("WDT")
+                else:
+                    self.mem.wake_reset("WDT")
 
     def set_interrupt_flags(self, old_rb:Register):
         intcon = self.mem[0xB]

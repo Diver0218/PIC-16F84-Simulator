@@ -147,6 +147,7 @@ class Memory(QObject):
         self[0x88] = self[0x88] & 0b00001000
 
     def wake_reset(self, type):
+        self.inc_pc()
         if type == "WDT":
             self[3] = self[3] & 0b11100111
         elif type == "INT":
