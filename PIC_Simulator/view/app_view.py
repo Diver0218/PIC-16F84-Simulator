@@ -321,12 +321,12 @@ class MainWindow(QMainWindow):
         self.lbl_pcl.setText(f"PCL:                  " + f"{mem[2].value:02x}".upper())
         self.lbl_pclath.setText(f"PCLATH:           " + f"{mem[10].value:02x}".upper())
         #hid
-        self.lbl_pc.setText(f"PC:                {mem.pc:04x}")
-        self.lbl_sp.setText(f"SP:                      {mem.stackpointer}")
+        self.lbl_pc.setText(f"PC:                {mem.pc:04x}".upper())
+        self.lbl_sp.setText(f"SP:                      {mem.stackpointer}".upper())
         #etc
-        self.lbl_status.setText(f"Status: {mem[3].value:02x}    \nIRP:  RP1:    RP0:    TO:     PD:     Z:      DC:     C:\n{mem[3].test_bit(7)}      {mem[3].test_bit(6)}         {mem[3].test_bit(5)}         {mem[3].test_bit(4)}        {mem[3].test_bit(3)}         {mem[3].test_bit(2)}       {mem[3].test_bit(1)}         {mem[3].test_bit(0)}")
-        self.lbl_option.setText(f"Option: {mem[0x81].value:02x}\nRBP:  IntEdg: T0CS: T0SE:  PSA:  PS2:  PS1:  PS0:\n{mem[0x81].test_bit(7)}       {mem[0x81].test_bit(6)}           {mem[0x81].test_bit(5)}       {mem[0x81].test_bit(4)}         {mem[0x81].test_bit(3)}       {mem[0x81].test_bit(2)}       {mem[0x81].test_bit(1)}       {mem[0x81].test_bit(0)}")
-        self.lbl_intcon.setText(f"INTCON: {mem[0x0B].value:02x}\nGIE:  EEIE:  T0IE:  INTE:  RBIE:  T0IF:  INTF:  RBIF:\n{mem[0x0B].test_bit(7)}      {mem[0x0B].test_bit(6)}        {mem[0x0B].test_bit(5)}       {mem[0x0B].test_bit(4)}         {mem[0x0B].test_bit(3)}        {mem[0x0B].test_bit(2)}       {mem[0x0B].test_bit(1)}        {mem[0x0B].test_bit(0)}")
+        self.lbl_status.setText(f"Status: {mem[3].value:02x}    \nIRP:  RP1:    RP0:    TO:     PD:     Z:      DC:     C:\n{mem[3].test_bit(7)}      {mem[3].test_bit(6)}         {mem[3].test_bit(5)}         {mem[3].test_bit(4)}        {mem[3].test_bit(3)}         {mem[3].test_bit(2)}       {mem[3].test_bit(1)}         {mem[3].test_bit(0)}".upper())
+        self.lbl_option.setText(f"Option: {mem[0x81].value:02x}\nRBP:  IntEdg: T0CS: T0SE:  PSA:  PS2:  PS1:  PS0:\n{mem[0x81].test_bit(7)}       {mem[0x81].test_bit(6)}           {mem[0x81].test_bit(5)}       {mem[0x81].test_bit(4)}         {mem[0x81].test_bit(3)}       {mem[0x81].test_bit(2)}       {mem[0x81].test_bit(1)}       {mem[0x81].test_bit(0)}".upper())
+        self.lbl_intcon.setText(f"INTCON: {mem[0x0B].value:02x}\nGIE:  EEIE:  T0IE:  INTE:  RBIE:  T0IF:  INTF:  RBIF:\n{mem[0x0B].test_bit(7)}      {mem[0x0B].test_bit(6)}        {mem[0x0B].test_bit(5)}       {mem[0x0B].test_bit(4)}         {mem[0x0B].test_bit(3)}        {mem[0x0B].test_bit(2)}       {mem[0x0B].test_bit(1)}        {mem[0x0B].test_bit(0)}".upper())
         #stack
         stack_str = ""
         for stack_part in mem.stack:
