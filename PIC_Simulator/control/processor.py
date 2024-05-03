@@ -96,6 +96,7 @@ class Processor(QObject):
     def btfsc(self, f, b):
         if not self.mem[f].test_bit(b):
             self.mem.inc_pc()
+            self.inc_cycle()    
         self.mem.inc_pc()
         self.inc_cycle()
 
@@ -107,6 +108,7 @@ class Processor(QObject):
     def btfss(self, f, b):
         if self.mem[f].test_bit(b):
             self.mem.inc_pc()
+            self.inc_cycle()    
         self.mem.inc_pc()
         self.inc_cycle()
 
