@@ -282,12 +282,16 @@ class Processor(QObject):
         self.inc_cycle()
 
     def sleep(self):
-        self.inc_cycle()
         if not self.is_asleep:
+            self.cycle += 1
+            self.sig_runtime.emit(self.cycle)
+            self.handle_Timer0(1)
             self.is_asleep = True
             self.Watchdog_Timer = 0
             self.handle_Watchdog(0)
             self.mem[3] = (self.mem[3] & 0b11100111) | 0b00010000
+        else:
+            self.inc_cycle()
         return
     
     def sublw(self, k):
