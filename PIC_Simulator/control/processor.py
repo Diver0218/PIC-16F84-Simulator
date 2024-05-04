@@ -117,7 +117,6 @@ class Processor(QObject):
         pclath43 = (self.mem[0xA].value & 0b11000) << 8
         self.mem.set_pc(k+pclath43)
         self.inc_cycle(2)
-        return
     
     def clrf(self, f):
         self.mem[f] = 0x00
