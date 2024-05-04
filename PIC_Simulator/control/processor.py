@@ -226,7 +226,6 @@ class Processor(QObject):
             self.W.set(self.mem[f])
             self.zero_flag(self.W)
         else:
-            self.mem[f] = self.mem[f]
             self.zero_flag(self.mem[f])
         self.mem.inc_pc()
         self.inc_cycle()
