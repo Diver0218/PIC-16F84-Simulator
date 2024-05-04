@@ -113,30 +113,47 @@ class Memory(QObject):
             self.stackpointer -= 1
             retAdr = self.stack[self.stackpointer]
         return retAdr
-    
-    def reset(self):
-        debugpy.debug_this_thread()
-        for item in self.eeprom[0][0xc:]:
-            item.set(0)
-        self[2].set(0)
-        self.pc = 0
-        self[3] = self[3] & 0b00011111
-        self[0xA].set(0)
-        self[0xB] = self[0xB] & 0b00000001
-        self[0x81].set(0b11111111)
-        self[0x85].set(0b00011111)
-        self[0x86].set(0b11111111)
-        self[0x88] = self[0x88] & 0b00001000
             
     def increment_timer0(self):
         self.eeprom[0][1].value += 1
 
     def power_reset(self):
-        self[3].set(0b00011000)
-        self[0x81].set(0b11111111)
-        self[0x85].set(0b00011111)
-        self[0x86].set(0b11111111)
+        self.pc = 0
+        self[0x02] = 0
+        self[0x03] = (self[3] & 0b00000111) | 0b00011000
+        self[0x0A] = 0
+        self[0x0B] = self[0xB] & 0b00000001
+        self[0x81] = 0b11111111
+        self[0x85] = 0b00011111
+        self[0x86] = 0b11111111
+        self[0x88] = self[3] & 0b00001000
+    
+    def reset(self, type:str):
+        debugpy.debug_this_thread()
+        self.pc = 0
+        self[0x02] = 0
+        if type == "MCLR":
+            if self[3].test_bit(3) == 0:
+                self[3] = (self[3] & 0b00000111) | 0b00010000
+            else:
+                self[3] = self[3] & 0b00011111
+        elif type == "WDT":
+            self[3] = (self[3] & 0b00000111) | 0b00001000
+        self[0x0A] = 0
+        self[0x0B] = self[0xB] & 0b00000001
+        self[0x81] = 0b11111111
+        self[0x85] = 0b00011111
+        self[0x86] = 0b11111111
+        self[0x88] = self[0x88] & 0b00001000
 
+    def wake_reset(self, type):
+        self.inc_pc()
+        if type == "WDT":
+            self[3] = self[3] & 0b11100111
+        elif type == "INT":
+            self[3] = (self[3] & 0b11100111) | 0b00010000
+        self[0x88] = self[0x88] & 0b11101111
+            
     @pyqtSlot(object)
     def set_data_latch(self, reg):
         reg_adr = self.compare_regs(reg)

@@ -161,7 +161,7 @@ class MainWindow(QMainWindow):
         self.lbl_option = QLabel(self.widg_sfr_etc)
         self.lbl_intcon = QLabel(self.widg_sfr_etc)
 
-        self.but_reg_reset.setText("Reset Register")
+        self.but_reg_reset.setText("Reset (MCLR)")
         self.but_reg_reset.clicked.connect(self.reset_mem)
         
         self.tbl_porta.setHorizontalHeaderLabels(['RA 7','RA 6','RA 5','RA 4','RA 3','RA 2','RA 1','RA 0'])
@@ -231,7 +231,7 @@ class MainWindow(QMainWindow):
         self.btn_step = QPushButton('Step')
         self.btn_run = QPushButton('Run')
         self.btn_stop = QPushButton('Stop')
-        self.btn_reset = QPushButton('Reset')
+        self.btn_reset = QPushButton('Reset Timer')
         self.txtbox_brk = QLineEdit("-")
         self.txtbox_freq = QLineEdit("4.0")
         self.btn_setbrk = QPushButton('Set')
@@ -244,6 +244,7 @@ class MainWindow(QMainWindow):
         self.btn_step.clicked.connect(self.btn_step_method)
         self.btn_run.clicked.connect(self.run)
         self.btn_stop.clicked.connect(self.stop)
+        self.btn_reset.clicked.connect(self.reset_timer)
         self.chbx_wd_timer.stateChanged.connect(self.change_wd_enable)
         
         self.txtbox_freq.textChanged.connect(self.send_freq)
@@ -321,12 +322,12 @@ class MainWindow(QMainWindow):
         self.lbl_pcl.setText(f"PCL:                  " + f"{mem[2].value:02x}".upper())
         self.lbl_pclath.setText(f"PCLATH:           " + f"{mem[10].value:02x}".upper())
         #hid
-        self.lbl_pc.setText(f"PC:                {mem.pc:04x}")
-        self.lbl_sp.setText(f"SP:                      {mem.stackpointer}")
+        self.lbl_pc.setText(f"PC:                {mem.pc:04x}".upper())
+        self.lbl_sp.setText(f"SP:                      {mem.stackpointer}".upper())
         #etc
-        self.lbl_status.setText(f"Status: {mem[3].value:02x}    \nIRP:  RP1:    RP0:    TO:     PD:     Z:      DC:     C:\n{mem[3].test_bit(7)}      {mem[3].test_bit(6)}         {mem[3].test_bit(5)}         {mem[3].test_bit(4)}        {mem[3].test_bit(3)}         {mem[3].test_bit(2)}       {mem[3].test_bit(1)}         {mem[3].test_bit(0)}")
-        self.lbl_option.setText(f"Option: {mem[0x81].value:02x}\nRBP:  IntEdg: T0CS: T0SE:  PSA:  PS2:  PS1:  PS0:\n{mem[0x81].test_bit(7)}       {mem[0x81].test_bit(6)}           {mem[0x81].test_bit(5)}       {mem[0x81].test_bit(4)}         {mem[0x81].test_bit(3)}       {mem[0x81].test_bit(2)}       {mem[0x81].test_bit(1)}       {mem[0x81].test_bit(0)}")
-        self.lbl_intcon.setText(f"INTCON: {mem[0x0B].value:02x}\nGIE:  EEIE:  T0IE:  INTE:  RBIE:  T0IF:  INTF:  RBIF:\n{mem[0x0B].test_bit(7)}      {mem[0x0B].test_bit(6)}        {mem[0x0B].test_bit(5)}       {mem[0x0B].test_bit(4)}         {mem[0x0B].test_bit(3)}        {mem[0x0B].test_bit(2)}       {mem[0x0B].test_bit(1)}        {mem[0x0B].test_bit(0)}")
+        self.lbl_status.setText(f"Status: {mem[3].value:02x}    \nIRP:  RP1:    RP0:    TO:     PD:     Z:      DC:     C:\n{mem[3].test_bit(7)}      {mem[3].test_bit(6)}         {mem[3].test_bit(5)}         {mem[3].test_bit(4)}        {mem[3].test_bit(3)}         {mem[3].test_bit(2)}       {mem[3].test_bit(1)}         {mem[3].test_bit(0)}".upper())
+        self.lbl_option.setText(f"Option: {mem[0x81].value:02x}\nRBP:  IntEdg: T0CS: T0SE:  PSA:  PS2:  PS1:  PS0:\n{mem[0x81].test_bit(7)}       {mem[0x81].test_bit(6)}           {mem[0x81].test_bit(5)}       {mem[0x81].test_bit(4)}         {mem[0x81].test_bit(3)}       {mem[0x81].test_bit(2)}       {mem[0x81].test_bit(1)}       {mem[0x81].test_bit(0)}".upper())
+        self.lbl_intcon.setText(f"INTCON: {mem[0x0B].value:02x}\nGIE:  EEIE:  T0IE:  INTE:  RBIE:  T0IF:  INTF:  RBIF:\n{mem[0x0B].test_bit(7)}      {mem[0x0B].test_bit(6)}        {mem[0x0B].test_bit(5)}       {mem[0x0B].test_bit(4)}         {mem[0x0B].test_bit(3)}        {mem[0x0B].test_bit(2)}       {mem[0x0B].test_bit(1)}        {mem[0x0B].test_bit(0)}".upper())
         #stack
         stack_str = ""
         for stack_part in mem.stack:
@@ -373,7 +374,7 @@ class MainWindow(QMainWindow):
         self.p.sig_pc.connect(self.highlight_instruction)
         self.sig_init.connect(self.p.init_view)
         self.sig_update_register_bit.connect(self.p.update_single_register_bit)
-        self.sig_reset_mem.connect(self.p.set_startup_variables)
+        self.sig_reset_mem.connect(self.p.mclr_reset)
         self.sig_update_input_mem.connect(self.p.update_table_input_mem)
         self.sig_run.connect(self.p.run_instructions)
         self.p.sig_continue.connect(self.continue_run)
@@ -387,6 +388,8 @@ class MainWindow(QMainWindow):
         self.p.moveToThread(self.p_thread)
         self.p_thread.start()
         self.lbl_timer.setText("Laufzeit: 0µs")
+        self.lbl_wd_timer.setText(f"Watchdog Timer: 0µs")
+        self.change_wd_enable()
         self.breakpoints = []
 
     def show_Code(self, file):
@@ -454,7 +457,11 @@ class MainWindow(QMainWindow):
         
     @pyqtSlot(str)
     def send_freq(self):
-        self.sig_frequenz.emit(float(self.txtbox_freq.text()))
+        try:
+            self.sig_frequenz.emit(float(self.txtbox_freq.text()))
+        except:
+            self.sig_frequenz.emit(0.0)
+
 
     @pyqtSlot(QListWidgetItem)
     def toggle_breakpoint(self, item:QListWidgetItem):
@@ -465,3 +472,8 @@ class MainWindow(QMainWindow):
         else:
             item.setForeground(QColor("red"))
             self.breakpoints.append(entry["pc"])
+
+    @pyqtSlot(bool)
+    def reset_timer(self):
+        self.p.cycle = 0
+        self.p.inc_cycle(0)

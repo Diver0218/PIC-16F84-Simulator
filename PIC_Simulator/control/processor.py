@@ -26,6 +26,7 @@ class Processor(QObject):
     sig_continue = pyqtSignal(bool)
     sig_runtime = pyqtSignal(int)
     sig_Watchdog_Timer = pyqtSignal(float)
+    is_asleep = False
 
     def __init__(self, inst) -> None:
         super().__init__()
@@ -282,7 +283,16 @@ class Processor(QObject):
         self.inc_cycle()
 
     def sleep(self):
-        # Sleep Routine
+        if not self.is_asleep:
+            self.cycle += 1
+            self.sig_runtime.emit(self.cycle)
+            self.handle_Timer0(1)
+            self.is_asleep = True
+            self.Watchdog_Timer = 0
+            self.handle_Watchdog(0)
+            self.mem[3] = (self.mem[3] & 0b11100111) | 0b00010000
+        else:
+            self.inc_cycle()
         return
     
     def sublw(self, k):
@@ -310,7 +320,10 @@ class Processor(QObject):
     def swapf(self, f, d = 0):
         higher = (self.mem[f].value & 0xF0) >> 4
         lower = self.mem[f].value & 0x0F
-        self.mem[f] = Register((lower << 4) + higher)
+        if d:
+            self.mem[f] = Register((lower << 4) + higher)
+        else:
+            self.W = W_Register((lower << 4) + higher)
         self.mem.inc_pc()
         self.inc_cycle()
     
@@ -405,8 +418,11 @@ class Processor(QObject):
     
     def handle_interrupts(self):
         intcon = self.mem[0xB]
-        if intcon.test_bit(7):
-            if (intcon.test_bit(5) and intcon.test_bit(2)) or (intcon.test_bit(4) and intcon.test_bit(1)) or (intcon.test_bit(3) and intcon.test_bit(0)):
+        if (intcon.test_bit(5) and intcon.test_bit(2)) or (intcon.test_bit(4) and intcon.test_bit(1)) or (intcon.test_bit(3) and intcon.test_bit(0)):
+            if self.is_asleep:
+                self.mem.wake_reset("INT")
+                self.is_asleep = False
+            if intcon.test_bit(7):
                 intcon.set_bit(7, 0)
                 self.mem.push_pc()
                 self.mem.set_pc(0x4)
@@ -416,12 +432,17 @@ class Processor(QObject):
             self.Watchdog_Timer += (cycles/float(self.quartz))*4
             self.sig_Watchdog_Timer.emit(self.Watchdog_Timer)
             if self.mem.get_bank_specific_register(1, 1).test_bit(3):
-                overflow = 18 * pow(2, self.mem.get_bank_specific_register(1, 1).value & 0x07)
+                overflow = 18000 * pow(2, self.mem.get_bank_specific_register(1, 1).value & 0x07)
             else:
-                overflow = 18
+                overflow = 18000
             if self.Watchdog_Timer >= overflow:
-                #Watchdog Timer Interrupt
-                pass
+                if self.is_asleep:
+                    self.mem.wake_reset("WDT")
+                    self.is_asleep = False
+                else:
+                    self.mem.reset("WDT")
+                self.Watchdog_Timer = 0
+                self.sig_Watchdog_Timer.emit(self.Watchdog_Timer)
 
     def set_interrupt_flags(self, old_rb:Register):
         intcon = self.mem[0xB]
@@ -458,10 +479,7 @@ class Processor(QObject):
         self.sig_inst.emit(self.inst)
     
     def update_pc(self):
-        self.sig_pc.emit(self.mem.pc)
-        
-    def update_pc(self):
-        self.sig_pc.emit(self.mem.pc)    
+        self.sig_pc.emit(self.mem.pc) 
             
     @pyqtSlot(bool)
     def handle_Timer0_changed(self, signal):
@@ -477,7 +495,6 @@ class Processor(QObject):
     def run_instructions(self, signal):
         if signal:
             self.step()
-            # time.sleep(0.1)
             self.sig_continue.emit(True)
             
         
@@ -521,9 +538,11 @@ class Processor(QObject):
         self.update_mem()
     
     @pyqtSlot(bool)
-    def set_startup_variables(self):
-        self.mem.reset()
+    def mclr_reset(self):
+        debugpy.debug_this_thread()
+        self.mem.reset("MCLR")
         self.update_mem()
+        self.update_pc()
         
     @pyqtSlot(float)
     def set_freq(self, value):
