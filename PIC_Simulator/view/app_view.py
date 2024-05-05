@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QWidget, QListWidget, QListWidgetItem, QLabel, QVBoxLayout, QHBoxLayout, QPushButton, QTableWidget, QTableWidgetItem, QMenuBar, QMenu, QMainWindow, QLayout, QFileDialog, QHeaderView, QCheckBox
+from PyQt6.QtWidgets import QWidget, QListWidget, QListWidgetItem, QLabel, QGridLayout, QVBoxLayout, QHBoxLayout, QPushButton, QTableWidget, QTableWidgetItem, QMenuBar, QMenu, QMainWindow, QLayout, QFileDialog, QHeaderView, QCheckBox
 from PyQt6.QtWidgets import QLineEdit
 from PyQt6.QtCore import QThread, pyqtSignal, pyqtSlot, Qt
 from PyQt6.QtGui import QColor
@@ -91,8 +91,43 @@ class TblPortButton(QPushButton):
             self.setText('1')
             update.append(1)
         self.sig_update_bit.emit(update)
-        
-    
+
+class LEDArray(QWidget):
+
+    def __init__(self):
+        super().__init__()
+        self.initUI()
+        self.SwitchButton.clicked.connect(self.toggleButton)
+
+    def initUI(self):
+        self.main_layout = QVBoxLayout()
+        self.LEDWidget = QWidget(self)
+        self.grid = QGridLayout(self.LEDWidget)
+        for col in range(8):
+            led = QLabel()
+            led.setFixedSize(20, 20)
+            led.setStyleSheet("border-radius: 10px; border: 1px solid black; background-color: #880000;")
+            self.grid.addWidget(led, 0, col, alignment=Qt.AlignmentFlag.AlignCenter)
+        self.SwitchButton = QPushButton("PORT B")
+        self.main_layout.addWidget(self.SwitchButton)
+        self.main_layout.addWidget(self.LEDWidget)
+        self.setLayout(self.main_layout)
+
+    def setLED(self, index, value):
+        led = self.grid.itemAtPosition(0, index).widget()
+        if value == "1":
+            new_color = QColor(255, 51, 51)  # Helles Rot
+        else:
+            new_color = QColor(136, 0, 0)  # Dunkles Rot
+        led.setStyleSheet(f"border-radius: 10px; border: 1px solid black; background-color: {new_color.name()};")
+        index += 1
+
+    def toggleButton(self):
+        if self.SwitchButton.text() == "PORT B":
+            self.SwitchButton.setText("PORT A")
+        else:
+            self.SwitchButton.setText("PORT B")
+
 class MainWindow(QMainWindow):
     
     sig_steprequest = pyqtSignal(bool)
@@ -239,6 +274,7 @@ class MainWindow(QMainWindow):
         self.lbl_freq = QLabel("Frequenz in MHz:")
         self.chbx_wd_timer = QCheckBox("Watchdog Timer aktiviert")
         self.lbl_wd_timer = QLabel("Watchdog Timer: 0µs")
+        self.LED = LEDArray()
 
         
         self.btn_step.clicked.connect(self.btn_step_method)
@@ -269,10 +305,11 @@ class MainWindow(QMainWindow):
         self.lay_runctrl.addWidget(self.widg_freq)
         self.lay_runctrl.addWidget(self.widg_timer)
         self.lay_runctrl.addWidget(self.widg_wd_timer)
+        self.lay_runctrl.addWidget(self.LED)
         
         # self.widg_runctrl.setStyleSheet("QWidget { border: 1px solid black; }")
         self.widg_runctrl.setFixedWidth(200)
-        self.widg_runctrl.setMaximumHeight(330)
+        self.widg_runctrl.setMaximumHeight(380)
         
         #menubar
         menubar = QMenuBar(self)
@@ -305,14 +342,12 @@ class MainWindow(QMainWindow):
 
     @pyqtSlot(tuple)
     def setMemData(self, proc_data):
-        #debug:
-        #print("Funktion aufgerufen: setMemData")
-        #enddebug
         self.is_set_data = True
         self.tbl_mem.setData(proc_data[0])
         self.tbl_porta.setPortData(proc_data[0], 5)
         self.tbl_portb.setPortData(proc_data[0], 6)
         self.set_fsr(proc_data[0], proc_data[1])
+        self.set_LED()
         self.is_set_data = False
     
     def set_fsr(self, mem:Memory, W):
@@ -333,6 +368,12 @@ class MainWindow(QMainWindow):
         for stack_part in mem.stack:
             stack_str += f"{stack_part:04x}\n".upper()
         self.lbl_stack.setText(f"Stack: \n{stack_str}")
+
+    
+    def set_LED(self):
+        port = self.tbl_portb if self.LED.SwitchButton.text() == "PORT B" else self.tbl_porta
+        for bit in range(port.columnCount()):
+            self.LED.setLED(bit, port.cellWidget(2, bit).text())
 
     @pyqtSlot(QTableWidgetItem)
     def update_input_mem(self, item:QTableWidgetItem):
