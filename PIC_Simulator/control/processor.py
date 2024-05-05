@@ -118,7 +118,6 @@ class Processor(QObject):
         pclath43 = (self.mem[0xA].value & 0b11000) << 8
         self.mem.set_pc(k+pclath43)
         self.inc_cycle(2)
-        return
     
     def clrf(self, f):
         self.mem[f] = 0x00
@@ -227,7 +226,6 @@ class Processor(QObject):
             self.W.set(self.mem[f])
             self.zero_flag(self.W)
         else:
-            self.mem[f] = self.mem[f]
             self.zero_flag(self.mem[f])
         self.mem.inc_pc()
         self.inc_cycle()
@@ -396,11 +394,6 @@ class Processor(QObject):
 #endregion
             
     def handle_Timer0(self, cycles):
-        if cycles == -1:
-            self.Vorteiler_count += 1
-            if self.Vorteiler_count >= self.Vorteiler:
-                self.mem.increment_timer0()
-                self.Vorteiler_count %= self.Vorteiler
         if self.Timer0_changed > 0:
             self.Timer0_changed -= 1
             return
@@ -408,6 +401,11 @@ class Processor(QObject):
             self.Vorteiler = pow(2, (self.mem.get_bank_specific_register(1, 1).value & 0x07) + 1)
         else:
             self.Vorteiler = 1
+        if cycles == -1:
+            self.Vorteiler_count += 1
+            if self.Vorteiler_count >= self.Vorteiler:
+                self.mem.increment_timer0()
+                self.Vorteiler_count %= self.Vorteiler
         if not self.mem.get_bank_specific_register(1, 1).test_bit(5):           
             self.Vorteiler_count += cycles
             if self.Vorteiler_count >= self.Vorteiler:
