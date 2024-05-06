@@ -49,8 +49,9 @@ class MemTable(QTableWidget):
                 self.setItem(1, i, QTableWidgetItem('i'))
             else:
                 self.setItem(1, i, QTableWidgetItem('o'))
-                tbl_button.setText(str(mem.data_latch[adr-5][7-i]))
-                self.setCellWidget(2, i, tbl_button)    
+                if not self.toggled:
+                    tbl_button.setText(str(mem.data_latch[adr-5][7-i]))
+                    self.setCellWidget(2, i, tbl_button)    
             if self.toggled:
                 tbl_button.setText(str(mem.data_latch[adr-5][7-i]))
                 self.setCellWidget(2, i, tbl_button)    
