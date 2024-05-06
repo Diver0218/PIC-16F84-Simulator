@@ -128,6 +128,55 @@ class LEDArray(QWidget):
         else:
             self.SwitchButton.setText("PORT B")
 
+class GridLabelWidget(QWidget):
+    sig_update_bit = pyqtSignal(list)
+    def __init__(self, address, string_list = [[],[],[]], parent = None):
+        super().__init__()
+        self.address = address
+        self.grid_layout = QGridLayout()
+        self.setLayout(self.grid_layout)
+        if parent:
+            self.sig_update_bit.connect(parent.update_single_register_bit)          
+        
+
+        self.labels = []
+
+        for row, row_items in enumerate(string_list[0:2]):
+            label_row = []
+            for col, text in enumerate(row_items):
+                label = QLabel(text)
+                self.grid_layout.addWidget(label, row, col)
+                label_row.append(label)
+            self.labels.append(label_row)
+
+        label_row = []
+        for col, text in enumerate(string_list[2]):
+            label = QLabel(text)
+            label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            label.setCursor(Qt.CursorShape.PointingHandCursor)
+            label.mousePressEvent = lambda event, r=2, c=col: self.label_clicked(event, r, c)
+            self.grid_layout.addWidget(label, 2, col)
+            label_row.append(label)
+        self.labels.append(label_row)
+    
+    def update(self, string_list):
+        label = self.labels[0][1]
+        label.setText(string_list[0][0])
+        for col, text in enumerate(string_list[1]):
+            label = self.labels[2][col]
+            label.setText(text)
+            
+    def label_clicked(self, event, row, col):
+        update = [self.address, 7-col]
+        if self.labels[row][col].text() == '1':
+            self.labels[row][col].setText('0')
+            update.append(0)
+        else:
+            self.labels[row][col].setText('1')
+            update.append(1)
+        self.sig_update_bit.emit(update)
+
+
 class MainWindow(QMainWindow):
     
     sig_steprequest = pyqtSignal(bool)
@@ -168,7 +217,7 @@ class MainWindow(QMainWindow):
         self.tbl_mem = MemTable(80, 9, self)
         
         self.widg_sfr = QWidget(self.widg_reg)
-        self.widg_sfr.setStyleSheet("QWidget { border: 1px solid black; }")
+        # self.widg_sfr.setStyleSheet("QWidget { border: 1px solid black; }")
         self.lay_sfr = QHBoxLayout(self.widg_sfr)
         self.lbl_stack = QLabel(self.widg_sfr)
         
@@ -184,6 +233,7 @@ class MainWindow(QMainWindow):
         self.lbl_fsr = QLabel(self.widg_sfr_vis)
         self.lbl_pcl = QLabel(self.widg_sfr_vis)
         self.lbl_pclath = QLabel(self.widg_sfr_vis)
+        self.widg_sfr_vis_hid.setStyleSheet("QWidget { border: 1px solid black; }")
         
         self.widg_sfr_hid = QWidget(self.widg_sfr_vis_hid)
         self.lay_sfr_hid = QVBoxLayout(self.widg_sfr_hid)
@@ -192,10 +242,13 @@ class MainWindow(QMainWindow):
         
         self.widg_sfr_etc = QWidget(self.widg_sfr_ou)
         self.lay_sfr_etc = QVBoxLayout(self.widg_sfr_etc)
-        self.lbl_status = QLabel(self.widg_sfr_etc)
-        self.lbl_option = QLabel(self.widg_sfr_etc)
-        self.lbl_intcon = QLabel(self.widg_sfr_etc)
-
+        self.lbl_status = GridLabelWidget(0x03, [["STATUS:", f"{0}".upper()],["IRP:","RP1:","RP0:","TO:","PD:","Z:","DC:","C:"],[str(0).upper() for i in range(8)]], self)
+        self.lbl_option = GridLabelWidget(0x81, [["OPT:", f"{0}".upper()],["RBP:", "IntEd:", "T0CS:", "T0SE:", "PSA:", "PS2:", "PS1:", "PS0:"],[str(0).upper() for i in range(8)]], self)
+        self.lbl_intcon = GridLabelWidget(0x0B, [["INTC:", f"{0}".upper()],["GIE:", "EEIE:", "T0IE:", "INTE:", "RBIE:", "T0IF:", "INTF:", "RBIF:"],[str(0).upper() for i in range(8)]], self)
+        self.widg_sfr_etc.setMaximumHeight(230)
+        # self.widg_sfr_etc.setStyleSheet("QWidget { border: 1px solid black; }")
+        
+        
         self.but_reg_reset.setText("Reset (MCLR)")
         self.but_reg_reset.clicked.connect(self.reset_mem)
         
@@ -360,9 +413,9 @@ class MainWindow(QMainWindow):
         self.lbl_pc.setText(f"PC:                {mem.pc:04x}".upper())
         self.lbl_sp.setText(f"SP:                      {mem.stackpointer}".upper())
         #etc
-        self.lbl_status.setText(f"Status: {mem[3].value:02x}    \nIRP:  RP1:    RP0:    TO:     PD:     Z:      DC:     C:\n{mem[3].test_bit(7)}      {mem[3].test_bit(6)}         {mem[3].test_bit(5)}         {mem[3].test_bit(4)}        {mem[3].test_bit(3)}         {mem[3].test_bit(2)}       {mem[3].test_bit(1)}         {mem[3].test_bit(0)}".upper())
-        self.lbl_option.setText(f"Option: {mem[0x81].value:02x}\nRBP:  IntEdg: T0CS: T0SE:  PSA:  PS2:  PS1:  PS0:\n{mem[0x81].test_bit(7)}       {mem[0x81].test_bit(6)}           {mem[0x81].test_bit(5)}       {mem[0x81].test_bit(4)}         {mem[0x81].test_bit(3)}       {mem[0x81].test_bit(2)}       {mem[0x81].test_bit(1)}       {mem[0x81].test_bit(0)}".upper())
-        self.lbl_intcon.setText(f"INTCON: {mem[0x0B].value:02x}\nGIE:  EEIE:  T0IE:  INTE:  RBIE:  T0IF:  INTF:  RBIF:\n{mem[0x0B].test_bit(7)}      {mem[0x0B].test_bit(6)}        {mem[0x0B].test_bit(5)}       {mem[0x0B].test_bit(4)}         {mem[0x0B].test_bit(3)}        {mem[0x0B].test_bit(2)}       {mem[0x0B].test_bit(1)}        {mem[0x0B].test_bit(0)}".upper())
+        self.lbl_status.update([[f"{mem[0x03].value:02x}".upper()],[str(mem[3].test_bit(i)).upper() for i in range(7, -1, -1)]])
+        self.lbl_option.update([[f"{mem[0x81].value:02x}".upper()],[str(mem[0x81].test_bit(i)).upper() for i in range(7, -1, -1)]])
+        self.lbl_intcon.update([[f"{mem[0x0B].value:02x}".upper()],[str(mem[0x0B].test_bit(i)).upper() for i in range(7, -1, -1)]])
         #stack
         stack_str = ""
         for stack_part in mem.stack:
