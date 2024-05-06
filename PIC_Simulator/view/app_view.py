@@ -43,7 +43,7 @@ class MemTable(QTableWidget):
         columns = self.columnCount()
         for i in range(columns):
             item = mem.get_bank_specific_register(adr, 1).test_bit(7 - i)
-            self.setItem(0, i, QTableWidgetItem(str(item))) # evtl hier auch ToggleButton einfügen
+            self.setItem(0, i, QTableWidgetItem(str(item)))
             tbl_button = TblPortButton(adr, 7-i, self)
             if item:
                 self.setItem(1, i, QTableWidgetItem('i'))
@@ -196,6 +196,7 @@ class MainWindow(QMainWindow):
         self.lst = Listing("")
         self._running = False
         self.setWindowTitle("PIC-16F84 Simulator")
+        self.freq = 4.0
 
     def create_window(self): 
 ##########################
@@ -539,7 +540,7 @@ class MainWindow(QMainWindow):
     
     @pyqtSlot(int)
     def set_runtime(self, cycles):
-        self.lbl_timer.setText(f"Laufzeit: {round(cycles/float(self.txtbox_freq.text()), 3)*4}µs")
+        self.lbl_timer.setText(f"Laufzeit: {round(cycles/self.freq)*4}µs")
      
     @pyqtSlot(int)   
     def change_wd_enable(self):
@@ -552,10 +553,12 @@ class MainWindow(QMainWindow):
     @pyqtSlot(str)
     def send_freq(self):
         try:
-            self.sig_frequenz.emit(float(self.txtbox_freq.text()))
+            value = float(self.txtbox_freq.text())
+            if value > 0.0:
+                self.sig_frequenz.emit(value)
+                self.freq = value
         except:
-            self.sig_frequenz.emit(0.0)
-
+            pass
 
     @pyqtSlot(QListWidgetItem)
     def toggle_breakpoint(self, item:QListWidgetItem):

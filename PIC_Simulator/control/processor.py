@@ -499,7 +499,8 @@ class Processor(QObject):
         
     @pyqtSlot(bool)
     def step(self):
-        debugpy.debug_this_thread()
+        if self.inst == []:
+            return
         self.tmp_rb = self.mem[6]
         self.execute_instruction()
         self.set_interrupt_flags(self.tmp_rb)
