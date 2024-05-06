@@ -43,6 +43,7 @@ class Processor(QObject):
         self.inst_pcl_set = False
         self.Watchdog_Timer:float = 0
         self.Watchdog_enabled = False
+        self.W = W_Register(0)
         
         
     # def set_instructions(self, inst):
@@ -295,6 +296,7 @@ class Processor(QObject):
         return
     
     def sublw(self, k):
+        debugpy.debug_this_thread()
         self.digit_carry_flag_sub(self.W, k)
         self.W = W_Register(k - self.W.value)
         self.carry_flag_sub(self.W)
@@ -386,7 +388,7 @@ class Processor(QObject):
             masked_k = k.value & 0x0F
         else:
             masked_k = k & 0x0F
-        if masked_k - masked_reg >= 0x0F:
+        if masked_k - masked_reg >= 0x00:
             self.mem[STATUS].set_bit(DC, 1)
         else:
             self.mem[STATUS].set_bit(DC, 0)
@@ -499,6 +501,7 @@ class Processor(QObject):
         
     @pyqtSlot(bool)
     def step(self):
+        debugpy.debug_this_thread()
         if self.inst == []:
             return
         self.tmp_rb = self.mem[6]

@@ -540,7 +540,7 @@ class MainWindow(QMainWindow):
     
     @pyqtSlot(int)
     def set_runtime(self, cycles):
-        self.lbl_timer.setText(f"Laufzeit: {round(cycles/self.freq)*4}µs")
+        self.lbl_timer.setText(f"Laufzeit: {(cycles/self.freq)*4}µs")
      
     @pyqtSlot(int)   
     def change_wd_enable(self):
